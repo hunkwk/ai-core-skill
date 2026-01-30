@@ -16,9 +16,11 @@ Desktop.ini
 *~
 
 # Claude Code
+.claude/
 .claude/cache/
 .claude/plugins/cache/
 .claude/session_history/
+.CLAUDE.md
 
 # Logs
 *.log
