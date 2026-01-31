@@ -6,7 +6,7 @@ MCDA Core - 标准化服务单元测试
 
 import pytest
 import math
-from skills.mcda_core.lib.normalization import (
+from mcda_core.normalization import (
     NormalizationService,
     MinMaxNormalization,
     VectorNormalization,
@@ -178,7 +178,7 @@ class TestNormalizationService:
 
     def test_service_minmax_normalize(self, normalization_service, sample_costs):
         """测试服务调用 MinMax 标准化"""
-        from skills.mcda_core.lib.models import NormalizationConfig
+        from mcda_core.models import NormalizationConfig
 
         config = NormalizationConfig(type="minmax", direction="lower_better")
         result = normalization_service.normalize(sample_costs, config)
@@ -190,7 +190,7 @@ class TestNormalizationService:
 
     def test_service_vector_normalize(self, normalization_service, sample_scores):
         """测试服务调用 Vector 标准化"""
-        from skills.mcda_core.lib.models import NormalizationConfig
+        from mcda_core.models import NormalizationConfig
 
         config = NormalizationConfig(type="vector", direction="higher_better")
         result = normalization_service.normalize(sample_scores, config)
@@ -201,7 +201,7 @@ class TestNormalizationService:
 
     def test_service_unknown_method_raises_error(self, normalization_service, sample_scores):
         """测试未知方法抛出异常"""
-        from skills.mcda_core.lib.models import NormalizationConfig
+        from mcda_core.models import NormalizationConfig
 
         config = NormalizationConfig(type="unknown_method", direction="higher_better")
 
@@ -210,7 +210,7 @@ class TestNormalizationService:
 
     def test_service_normalize_batch(self, normalization_service):
         """测试批量标准化"""
-        from skills.mcda_core.lib.models import NormalizationConfig
+        from mcda_core.models import NormalizationConfig
 
         data = {
             "成本": {"AWS": 20.0, "Azure": 50.0, "GCP": 35.0},

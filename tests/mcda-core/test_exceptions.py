@@ -6,7 +6,7 @@ MCDA Core - 异常单元测试
 
 import pytest
 
-from skills.mcda_core.lib.exceptions import (
+from mcda_core.exceptions import (
     # 基类
     MCDAError,
     # 验证异常

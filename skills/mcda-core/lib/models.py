@@ -405,7 +405,7 @@ class PerturbationResult:
             raise ValueError(f"PerturbationResult: perturbed_weight ({self.perturbed_weight}) 必须在 0-1 范围内")
 
 
-@dataclass(frozen=True)
+@dataclass
 class SensitivityResult:
     """敏感性分析结果
 
@@ -424,6 +424,59 @@ class SensitivityResult:
         """验证参数有效性"""
         if self.robustness_score < 0 or self.robustness_score > 1:
             raise ValueError(f"SensitivityResult: robustness_score ({self.robustness_score}) 必须在 0-1 范围内")
+
+    @property
+    def criterion_name(self) -> str | None:
+        """获取扰动的准则名称（便捷属性）"""
+        if self.perturbations:
+            return self.perturbations[0].criterion_name
+        return None
+
+    @property
+    def original_weight(self) -> float | None:
+        """获取原始权重（便捷属性）"""
+        if self.perturbations:
+            return self.perturbations[0].original_weight
+        return None
+
+
+@dataclass(frozen=True)
+class CriticalCriterion:
+    """关键准则
+
+    记录对排名影响最大的准则。
+
+    Attributes:
+        criterion_name: 准则名称
+        weight: 权重
+        rank_changes: 排名变化数
+    """
+    criterion_name: str
+    weight: float
+    rank_changes: int
+
+    def __post_init__(self):
+        """验证参数有效性"""
+        if not self.criterion_name:
+            raise ValueError("CriticalCriterion: criterion_name 不能为空")
+        if self.weight < 0 or self.weight > 1:
+            raise ValueError(f"CriticalCriterion: weight ({self.weight}) 必须在 0-1 范围内")
+        if self.rank_changes < 0:
+            raise ValueError(f"CriticalCriterion: rank_changes ({self.rank_changes}) 不能为负数")
+
+
+@dataclass(frozen=True)
+class SensitivityAnalysisResult:
+    """综合敏感性分析结果
+
+    记录完整的敏感性分析结果。
+
+    Attributes:
+        critical_criteria: 关键准则列表
+        perturbation_results: 所有准则的扰动结果列表
+    """
+    critical_criteria: tuple[CriticalCriterion, ...]
+    perturbation_results: tuple["SensitivityResult", ...]
 
 
 @dataclass
@@ -511,6 +564,8 @@ __all__ = [
     "ResultMetadata",
     "PerturbationResult",
     "SensitivityResult",
+    "CriticalCriterion",
+    "SensitivityAnalysisResult",
     "DecisionResult",
     # 标准化
     "NormalizationConfig",

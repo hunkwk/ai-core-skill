@@ -27,12 +27,12 @@ lib_module.__path__ = [str(mcda_core_path / "lib")]
 sys.modules["skills.mcda_core.lib"] = lib_module
 
 # 现在导入模块
-from skills.mcda_core.lib.normalization import (
+from mcda_core.normalization import (
     MinMaxNormalization,
     VectorNormalization,
     NormalizationService,
 )
-from skills.mcda_core.lib.models import NormalizationConfig
+from mcda_core.models import NormalizationConfig
 
 
 def test_minmax():

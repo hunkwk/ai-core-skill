@@ -7,11 +7,11 @@ MCDA Core - VIKOR 算法实现
 from typing import Any, TYPE_CHECKING
 import math
 
-from skills.mcda_core.lib.algorithms.base import MCDAAlgorithm, register_algorithm
+from mcda_core.algorithms.base import MCDAAlgorithm, register_algorithm
 
 # 类型注解导入
 if TYPE_CHECKING:
-    from skills.mcda_core.lib.models import DecisionProblem, DecisionResult
+    from mcda_core.models import DecisionProblem, DecisionResult
 
 
 @register_algorithm("vikor")
@@ -85,7 +85,7 @@ class VIKORAlgorithm(MCDAAlgorithm):
             决策结果
         """
         # 运行时导入（避免循环导入）
-        from skills.mcda_core.lib.models import DecisionResult, RankingItem, ResultMetadata
+        from mcda_core.models import DecisionResult, RankingItem, ResultMetadata
 
         # 验证输入
         self.validate(problem)

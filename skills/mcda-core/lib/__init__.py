@@ -5,3 +5,12 @@ MCDA Core - Multi-Criteria Decision Analysis Core Framework
 """
 
 __version__ = "0.1.0"
+
+# 导入核心模块（供外部使用）
+from . import models  # noqa: F401
+from . import exceptions  # noqa: F401
+from . import algorithms  # noqa: F401
+from . import normalization  # noqa: F401
+from . import validation  # noqa: F401
+from . import reporter  # noqa: F401
+from . import sensitivity  # noqa: F401

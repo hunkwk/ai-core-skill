@@ -5,11 +5,11 @@ MCDA Core - VIKOR 算法测试
 """
 
 import pytest
-from skills.mcda_core.lib.models import (
+from mcda_core.models import (
     Criterion,
     Direction,
 )
-from skills.mcda_core.lib.algorithms.vikor import VIKORAlgorithm
+from mcda_core.algorithms.vikor import VIKORAlgorithm
 
 
 # =============================================================================
@@ -40,10 +40,10 @@ def sample_scores():
 @pytest.fixture
 def sample_problem(sample_criteria, sample_scores):
     """创建示例决策问题"""
-    from skills.mcda_core.lib.models import DecisionProblem
+    from mcda_core.models import DecisionProblem
 
     return DecisionProblem(
-        
+
         alternatives=tuple(sample_scores.keys()),
         criteria=sample_criteria,
         scores=sample_scores,
@@ -180,7 +180,7 @@ class TestVIKOREdgeCases:
 
     def test_vikor_two_alternatives(self):
         """测试只有 2 个备选方案"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=0.5, direction="higher_better"),
@@ -193,7 +193,7 @@ class TestVIKOREdgeCases:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,
@@ -207,7 +207,7 @@ class TestVIKOREdgeCases:
 
     def test_vikor_many_alternatives(self):
         """测试多个备选方案"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=1.0, direction="higher_better"),
@@ -219,7 +219,7 @@ class TestVIKOREdgeCases:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,
@@ -235,7 +235,7 @@ class TestVIKOREdgeCases:
 
     def test_vikor_equal_scores(self):
         """测试所有方案评分相同"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=0.5, direction="higher_better"),
@@ -248,7 +248,7 @@ class TestVIKOREdgeCases:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,

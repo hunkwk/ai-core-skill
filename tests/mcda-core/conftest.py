@@ -12,16 +12,17 @@ import types
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-# 处理带连字符的包名：mcda-core -> mcda_core
-# Python 模块名不能包含连字符，所以需要创建模块别名
-mcda_core_path = project_root / "skills" / "mcda-core"
+# 添加 mcda-core/lib 到 Python 路径
+mcda_core_lib_path = project_root / "skills" / "mcda-core" / "lib"
+sys.path.insert(0, str(mcda_core_lib_path.resolve()))
 
-# 创建 skills.mcda_core 模块别名
-mcda_core_module = types.ModuleType("skills.mcda_core")
-mcda_core_module.__path__ = [str(mcda_core_path)]
-sys.modules["skills.mcda_core"] = mcda_core_module
+# 创建 mcda_core 模块别名（因为 mcda-core 包名带连字符）
+# 导入 lib 模块并将其注册为 mcda_core
+import importlib.util
+spec = importlib.util.spec_from_file_location("mcda_core", mcda_core_lib_path / "__init__.py")
+mcda_core_module = importlib.util.module_from_spec(spec)
+sys.modules["mcda_core"] = mcda_core_module
+sys.modules["mcda_core"].__path__ = [str(mcda_core_lib_path)]
+# 执行模块加载
+spec.loader.exec_module(mcda_core_module)
 
-# 创建 skills.mcda_core.lib 子模块
-lib_module = types.ModuleType("skills.mcda_core.lib")
-lib_module.__path__ = [str(mcda_core_path / "lib")]
-sys.modules["skills.mcda_core.lib"] = lib_module

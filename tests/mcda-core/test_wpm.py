@@ -6,11 +6,11 @@ MCDA Core - WPM 算法测试
 
 import pytest
 import math
-from skills.mcda_core.lib.models import (
+from mcda_core.models import (
     Criterion,
     Direction,
 )
-from skills.mcda_core.lib.algorithms.wpm import WPMAlgorithm
+from mcda_core.algorithms.wpm import WPMAlgorithm
 
 
 # =============================================================================
@@ -41,10 +41,10 @@ def sample_scores():
 @pytest.fixture
 def sample_problem(sample_criteria, sample_scores):
     """创建示例决策问题"""
-    from skills.mcda_core.lib.models import DecisionProblem
+    from mcda_core.models import DecisionProblem
 
     return DecisionProblem(
-        
+
         alternatives=tuple(sample_scores.keys()),
         criteria=sample_criteria,
         scores=sample_scores,
@@ -90,7 +90,7 @@ class TestWPMAlgorithm:
 
     def test_wpm_all_higher_better(self):
         """测试所有准则都是 higher_better"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=0.5, direction="higher_better"),
@@ -103,7 +103,7 @@ class TestWPMAlgorithm:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,
@@ -150,7 +150,7 @@ class TestWPMEdgeCases:
 
     def test_wpm_zero_value_handling(self):
         """测试零值处理（应该加小常数避免）"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=0.5, direction="higher_better"),
@@ -163,7 +163,7 @@ class TestWPMEdgeCases:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,
@@ -183,7 +183,7 @@ class TestWPMEdgeCases:
 
     def test_wpm_small_values(self):
         """测试小数值"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=1.0, direction="higher_better"),
@@ -196,7 +196,7 @@ class TestWPMEdgeCases:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,
@@ -212,7 +212,7 @@ class TestWPMEdgeCases:
 
     def test_wpm_equal_weights(self):
         """测试所有权重相等"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=0.5, direction="higher_better"),
@@ -225,7 +225,7 @@ class TestWPMEdgeCases:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,

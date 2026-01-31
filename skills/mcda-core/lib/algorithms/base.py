@@ -9,7 +9,7 @@ from typing import Any, TYPE_CHECKING
 
 # 类型注解导入（避免循环导入）
 if TYPE_CHECKING:
-    from skills.mcda_core.lib.models import DecisionProblem, DecisionResult
+    from mcda_core.models import DecisionProblem, DecisionResult
 
 
 # =============================================================================

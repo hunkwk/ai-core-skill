@@ -6,11 +6,11 @@ MCDA Core - TOPSIS 算法测试
 
 import pytest
 import math
-from skills.mcda_core.lib.models import (
+from mcda_core.models import (
     Criterion,
     Direction,
 )
-from skills.mcda_core.lib.algorithms.topsis import TOPSISAlgorithm
+from mcda_core.algorithms.topsis import TOPSISAlgorithm
 
 
 # =============================================================================
@@ -41,10 +41,10 @@ def sample_scores():
 @pytest.fixture
 def sample_problem(sample_criteria, sample_scores):
     """创建示例决策问题"""
-    from skills.mcda_core.lib.models import DecisionProblem
+    from mcda_core.models import DecisionProblem
 
     return DecisionProblem(
-        
+
         alternatives=tuple(sample_scores.keys()),
         criteria=sample_criteria,
         scores=sample_scores,
@@ -143,7 +143,7 @@ class TestTOPSISEdgeCases:
 
     def test_topsis_two_alternatives(self):
         """测试只有 2 个备选方案"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=0.5, direction="higher_better"),
@@ -156,7 +156,7 @@ class TestTOPSISEdgeCases:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,
@@ -174,7 +174,7 @@ class TestTOPSISEdgeCases:
 
     def test_topsis_many_alternatives(self):
         """测试多个备选方案"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=1.0, direction="higher_better"),
@@ -186,7 +186,7 @@ class TestTOPSISEdgeCases:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,
@@ -202,7 +202,7 @@ class TestTOPSISEdgeCases:
 
     def test_topsis_equal_scores(self):
         """测试所有方案评分相同"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=0.5, direction="higher_better"),
@@ -215,7 +215,7 @@ class TestTOPSISEdgeCases:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,
@@ -229,7 +229,7 @@ class TestTOPSISEdgeCases:
 
     def test_topsis_single_criterion(self):
         """测试单个准则"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=1.0, direction="higher_better"),
@@ -242,7 +242,7 @@ class TestTOPSISEdgeCases:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,
@@ -291,7 +291,7 @@ class TestTOPSISSpecific:
         # 这可以通过检查中间结果来验证
         # 但这里我们只验证输入输出正确性
 
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=0.6, direction="higher_better"),
@@ -304,7 +304,7 @@ class TestTOPSISSpecific:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,

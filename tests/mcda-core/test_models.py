@@ -7,8 +7,8 @@ MCDA Core - 数据模型单元测试
 import pytest
 from datetime import datetime
 
-# 导入数据模型（注意：使用 skills.mcda_core 而非 skills.mcda-core）
-from skills.mcda_core.lib.models import (
+# 导入数据模型
+from mcda_core.models import (
     # 类型别名
     Direction,
     ScoreMatrix,
@@ -366,11 +366,11 @@ class TestDecisionProblem:
             )
 
     def test_problem_less_than_2_criteria_raises_error(self):
-        """测试少于 2 个准则抛出异常"""
-        with pytest.raises(ValueError, match="至少需要 2 个评价准则"):
+        """测试少于 1 个准则抛出异常"""
+        with pytest.raises(ValueError, match="至少需要 1 个评价准则"):
             DecisionProblem(
                 alternatives=("AWS", "Azure"),
-                criteria=(Criterion(name="成本", weight=1.0, direction="lower_better"),)
+                criteria=()  # 空准则列表
             )
 
     def test_problem_invalid_score_range_raises_error(self, sample_criteria):

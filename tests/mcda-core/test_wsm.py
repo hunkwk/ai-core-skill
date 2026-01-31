@@ -6,11 +6,11 @@ MCDA Core - WSM 算法测试
 
 import pytest
 import math
-from skills.mcda_core.lib.models import (
+from mcda_core.models import (
     Criterion,
     Direction,
 )
-from skills.mcda_core.lib.algorithms.wsm import WSMAlgorithm
+from mcda_core.algorithms.wsm import WSMAlgorithm
 
 
 # =============================================================================
@@ -41,7 +41,7 @@ def sample_scores():
 @pytest.fixture
 def sample_problem(sample_criteria, sample_scores):
     """创建示例决策问题"""
-    from skills.mcda_core.lib.models import DecisionProblem
+    from mcda_core.models import DecisionProblem
 
     return DecisionProblem(
         alternatives=tuple(sample_scores.keys()),
@@ -95,7 +95,7 @@ class TestWSMAlgorithm:
 
     def test_wsm_all_higher_better(self):
         """测试所有准则都是 higher_better"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=0.5, direction="higher_better"),
@@ -124,7 +124,7 @@ class TestWSMAlgorithm:
 
     def test_wsm_all_lower_better(self):
         """测试所有准则都是 lower_better"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="成本", weight=0.6, direction="lower_better"),
@@ -183,7 +183,7 @@ class TestWSMEdgeCases:
 
     def test_wsm_two_alternatives(self):
         """测试只有 2 个备选方案"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=0.5, direction="higher_better"),
@@ -196,7 +196,7 @@ class TestWSMEdgeCases:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,
@@ -210,7 +210,7 @@ class TestWSMEdgeCases:
 
     def test_wsm_many_alternatives(self):
         """测试多个备选方案"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=1.0, direction="higher_better"),
@@ -222,7 +222,7 @@ class TestWSMEdgeCases:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,
@@ -238,7 +238,7 @@ class TestWSMEdgeCases:
 
     def test_wsm_zero_scores(self):
         """测试零值评分"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=0.5, direction="higher_better"),
@@ -251,7 +251,7 @@ class TestWSMEdgeCases:
         }
 
         problem = DecisionProblem(
-            
+
             alternatives=tuple(scores.keys()),
             criteria=criteria,
             scores=scores,
@@ -267,7 +267,7 @@ class TestWSMEdgeCases:
 
     def test_wsm_equal_weights(self):
         """测试所有权重相等"""
-        from skills.mcda_core.lib.models import DecisionProblem
+        from mcda_core.models import DecisionProblem
 
         criteria = [
             Criterion(name="性能", weight=0.25, direction="higher_better"),
