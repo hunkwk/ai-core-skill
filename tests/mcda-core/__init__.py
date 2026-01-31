@@ -1,0 +1,3 @@
+"""
+MCDA Core Test Suite
+"""
