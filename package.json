@@ -1,0 +1,35 @@
+{
+  "name": "ai-core-skill",
+  "version": "0.1.0",
+  "description": "AI-powered development framework with intelligent agents and skills for Claude Code",
+  "author": "hunkwk",
+  "license": "Apache-2.0",
+  "scripts": {
+    "validate": "node scripts/validate_skills.js",
+    "package": "node scripts/package_all.js",
+    "test": "echo \"No tests yet\" && exit 0",
+    "format:check": "prettier --check \"**/*.{js,ts,json,md}\"",
+    "format:write": "prettier --write \"**/*.{js,ts,json,md}\""
+  },
+  "keywords": [
+    "ai",
+    "claude",
+    "claude-code",
+    "skills",
+    "agents",
+    "development",
+    "automation",
+    "git-flow",
+    "tdd"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hunkwk/ai-core-skill.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5"
+  }
+}
