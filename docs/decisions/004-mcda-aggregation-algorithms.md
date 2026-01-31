@@ -7,445 +7,805 @@
 2026-01-31
 
 ## 上下文 (Context)
-MCDA Core v1.0 设计中，用户需要直接提供各准则的评分（1-5 分制），但存在以下问题：
 
-1. **评分制不够直观**: 1-5 分制不够精细，难以反映细微差异
-2. **缺少评分转换能力**: 用户需要手动将原始数据（成本 20 万、响应时间 300ms）转换为评分
-3. **数据源单一**: 仅支持 YAML 配置，Excel/CSV 等常见格式无法直接使用
+MCDA Core 框架需要支持多种汇总算法（Aggregation Algorithms），将标准化数据和权重聚合为最终排名。现有文献中存在 12+ 种常用汇总算法，需要确定实现优先级和分阶段计划。
 
-### 用户需求反馈
-- "希望能用 0-100 分制，更符合百分制习惯"
-- "希望能配置评分规则，自动从原始值计算评分"
-- "希望能直接导入 Excel 数据，不用手动转 YAML"
+**候选算法列表**:
 
-## 决策 (Decision)
+### 线性聚合算法
+1. **WSM** (Weighted Sum Model) - 加权算术平均
+2. **WPM** (Weighted Product Model) - 加权几何平均
+3. **SAW** (Simple Additive Weighting) - 简单加权法
 
-### 1. 六层分层架构（新增评分计算层）
+### 距离类算法
+4. **TOPSIS** (Technique for Order Preference by Similarity to Ideal Solution) - 逼近理想解排序法
+5. **VIKOR** (VIseKriterijumska Optimizacija I Kompromisno Resenje) - 折衷排序法
 
-在原有五层架构基础上，在核心服务层和算法抽象层之间插入**评分计算层**：
+### 偏好类算法
+6. **PROMETHEE-II** (Preference Ranking Organization METHod for Enrichment Evaluations) - 优先排序法
+7. **ELECTRE-I** (Elimination Et Choix Traduisant la REalité) - 消除与选择转换法
 
-```
-应用层 (CLI)
-    ↓
-核心服务层 (Validation, Reporter, Sensitivity, DataSource)
-    ↓
-评分计算层 (ScoringEngine) ← NEW
-    ↓
-算法抽象层 (MCDAAlgorithm 基类)
-    ↓
-数据模型层 (DecisionProblem, DecisionResult)
-    ↓
-基础设施层 (YAML/CSV/Excel I/O, Utils)
-```
+### 效用类算法
+8. **COPRAS** (COmplex PRoportional ASsessment) - 复杂比例评估
+9. **MOORA** (Multi-Objective Optimization on the basis of Ratio Analysis) - 比率分析多目标优化
 
-**理由**:
-- 评分是算法的通用前置步骤（所有算法都需要评分）
-- 保持算法层纯粹性（只负责权重聚合）
-- 便于独立测试和复用
+### 特殊场景算法
+10. **TODIM** (Tomada de Decisao Interativa e Multicriterio) - 交互式多准则决策（前景理论）
+11. **MACBETH** (Measuring Attractiveness by a Categorical Based Evaluation Technique) - 定性偏好量化
+12. **ORESTE** (Organisation, Rangement et Synthese de Donnes Relationale) - 关系数据排序
 
-### 2. 评分范围改为 0-100 分制
-
-**原**: 1-5 分制（Likert scale）
-**新**: 0-100 分制（百分制）
-
-**影响**:
-- ✅ 更直观，符合日常习惯
-- ✅ 精度更高，能区分细微差异
-- ✅ 方便归一化处理
-- ⚠️ 需要更新验证逻辑
-
-**实施**:
-```python
-# 修改前
-ScoreRange = tuple[int, int]  # (1, 5)
-
-# 修改后
-ScoreRange = tuple[float, float]  # (0.0, 100.0)
-```
-
-### 3. 支持评分规则配置
-
-新增 `ScoringRule` 数据模型，支持多种评分规则类型：
-
-#### 3.1 线性评分规则（LinearScoringRule）
-```yaml
-scoring_rule:
-  type: linear
-  min: 0          # 最小值
-  max: 100        # 最大值
-  scale: 100      # 满分值
-```
-
-**公式**:
-- `higher_better`: `score = scale * (value - min) / (max - min)`
-- `lower_better`: `score = scale * (1 - (value - min) / (max - min))`
-
-**示例**: 成本 0-100 万元
-```
-成本 20 万 → score = 100 * (1 - 20/100) = 80 分
-成本 50 万 → score = 100 * (1 - 50/100) = 50 分
-```
-
-#### 3.2 阈值评分规则（ThresholdScoringRule）
-```yaml
-scoring_rule:
-  type: threshold
-  ranges:
-    - {max: 100, score: 100}        # < 100ms → 100 分
-    - {min: 100, max: 500, score: 80}   # 100-500ms → 80 分
-    - {min: 500, max: 1000, score: 60}  # 500-1000ms → 60 分
-    - {min: 1000, score: 40}        # > 1000ms → 40 分
-  default_score: 20
-```
-
-#### 3.3 数据模型定义
-```python
-@dataclass(frozen=True)
-class LinearScoringRule:
-    """线性评分规则"""
-    type: Literal["linear"] = "linear"
-    min: float
-    max: float
-    scale: float = 100.0
-
-@dataclass(frozen=True)
-class ThresholdRange:
-    """阈值范围"""
-    min: float | None = None
-    max: float | None = None
-    score: float = 100.0
-
-@dataclass(frozen=True)
-class ThresholdScoringRule:
-    """阈值分段评分规则"""
-    type: Literal["threshold"] = "threshold"
-    ranges: tuple[ThresholdRange, ...]
-    default_score: float = 0.0
-
-ScoringRule = LinearScoringRule | ThresholdScoringRule
-
-@dataclass(frozen=True)
-class Criterion:
-    """评价准则（v2.0）"""
-    name: str
-    weight: float
-    direction: Direction
-    scoring_rule: ScoringRule | None = None  # 新增
-    column: str | None = None                # 新增：映射到数据源列名
-```
-
-### 4. 支持 Excel/CSV 数据导入
-
-#### 4.1 数据源配置
-```yaml
-data_source:
-  type: csv
-  file: data/vendor_data.csv
-  encoding: utf-8
-
-# 或 Excel
-data_source:
-  type: excel
-  file: data/vendor_data.xlsx
-  sheet: 决策数据
-```
-
-#### 4.2 数据加载器接口
-```python
-class DataSourceLoader(ABC):
-    """数据源加载器基类"""
-    @abstractmethod
-    def can_handle(self, source: DataSource) -> bool:
-        pass
-
-    @abstractmethod
-    def load(self, source: DataSource) -> dict[str, dict[str, float | str]]:
-        """返回原始数据矩阵 {alternative: {criterion: raw_value}}"""
-        pass
-
-class CSVDataSourceLoader(DataSourceLoader):
-    """CSV 加载器（使用标准库 csv 模块）"""
-    pass
-
-class ExcelDataSourceLoader(DataSourceLoader):
-    """Excel 加载器（使用 openpyxl，可选依赖）"""
-    pass
-```
-
-#### 4.3 Excel 示例
-```
-| 方案   | 成本(万元) | 响应时间(ms) | 功能数 | 稳定性(%) |
-|--------|-----------|-------------|--------|----------|
-| AWS    | 20        | 150         | 10     | 99.9     |
-| Azure  | 50        | 80          | 20     | 99.5     |
-| GCP    | 35        | 120         | 15     | 99.7     |
-```
-
-#### 4.4 依赖决策
-| 依赖 | 用途 | 是否必需 | 备注 |
-|------|------|---------|------|
-| **csv** (标准库) | CSV 解析 | 必需 | 零依赖 |
-| **openpyxl** | Excel 支持 | 可选 | 按需安装 |
-| **pandas** | 数据处理 | 不推荐 | 过重 |
-
-**决策**:
-- CSV 支持（必需）：使用 Python 标准库
-- Excel 支持（可选）：使用 `openpyxl`，未安装时友好提示
-- 不使用 pandas（违反最小依赖原则）
+**挑战**:
+- 如何平衡应用热度、实现难度、用户价值？
+- 如何分阶段实施，确保每个版本都有可用功能？
+- 如何设计统一的算法接口？
 
 ---
 
-## 核心接口设计
+## 决策 (Decision)
 
-### ScoringEngine（评分计算引擎）
+### 1. 优先级评分体系
+
+采用**四维评分法**确定优先级：
+
+| 维度 | 权重 | 评分标准 (1-5 分) |
+|------|------|------------------|
+| **应用热度** | 40% | 文献引用量、实际使用频率、社区活跃度 |
+| **实现难度** | 30% | 算法复杂度 (5=最简单)、依赖库需求 (5=最少)、开发工作量 (5=最小) |
+| **用户价值** | 20% | 解决实际问题的能力、适用场景广度 |
+| **架构兼容性** | 10% | 与现有框架的适配度、接口设计难度 |
+
+### 2. 综合评分结果
+
+| 排名 | 算法 | 中文名 | 热度 | 难度 | 价值 | 兼容 | **总分** | 类型 | 阶段 | 工作量 |
+|------|------|--------|------|------|------|------|----------|------|------|--------|
+| **1** | **WSM** | 加权算术平均 | 5.0 | 5.0 | 4.5 | 5.0 | **4.90** | 线性 | **v0.1** | 1人日 |
+| **2** | **TOPSIS** | 逼近理想解 | 5.0 | 4.5 | 5.0 | 5.0 | **4.85** | 距离 | **v0.2** | 2人日 |
+| **3** | **WPM** | 加权几何平均 | 4.5 | 5.0 | 4.5 | 5.0 | **4.70** | 非线性 | **v0.1** | 1人日 |
+| **4** | **SAW** | 简单加权 | 4.5 | 5.0 | 4.5 | 5.0 | **4.70** | 线性 | **v0.2** | 0.5人日 |
+| **5** | **VIKOR** | 折衷排序 | 4.5 | 3.5 | 5.0 | 5.0 | **4.35** | 折衷 | **v0.3** | 3人日 |
+| **6** | **PROMETHEE-II** | 优先排序 | 4.0 | 3.0 | 4.5 | 4.5 | **3.85** | 偏好 | **v0.3** | 4人日 |
+| **7** | **COPRAS** | 复杂比例 | 3.5 | 4.0 | 4.0 | 5.0 | **3.85** | 效用 | **v0.3** | 2人日 |
+| **8** | **MOORA** | 比率分析 | 3.5 | 4.5 | 3.5 | 5.0 | **3.80** | 效用 | **v0.3** | 2人日 |
+| **9** | **ELECTRE-I** | 消除选择 | 3.5 | 2.5 | 4.0 | 3.0 | **3.25** | 级别 | **v0.3** | 4人日 |
+| **10** | **TODIM** | 交互决策 | 3.0 | 2.5 | 4.5 | 4.0 | **3.20** | 前景 | **v0.4** | 4人日 |
+| **11** | **MACBETH** | 分类评估 | 2.5 | 3.0 | 4.0 | 3.5 | **3.00** | 定量 | **v0.4** | 5人日 |
+| **12** | **ORESTE** | 关系排序 | 2.0 | 3.5 | 3.5 | 3.0 | **2.65** | 距离 | **v0.4+** | 3人日 |
+
+### 3. 分阶段实施计划
+
+#### v0.1: MVP 必备（2 人日，1-2 天）
+
+**目标**: 验证架构可行性，交付基础决策能力
+
+| 算法 | 优先级 | 工作量 | 说明 |
+|------|--------|--------|------|
+| **WSM** | P0 | 1 人日 | 最简单、验证可插拔架构 |
+| **WPM** | P0 | 1 人日 | 非线性聚合示例，与 WSM 互补 |
+
+**总工作量**: **2 人日**
+
+**里程碑**:
+- [ ] 基础算法可插拔验证
+- [ ] 算法注册机制工作
+- [ ] 测试覆盖率 >= 80%
+
+---
+
+#### v0.2: 基础扩展（2.5 人日，3-4 天）
+
+**目标**: 引入距离概念，提升排序精度
+
+| 算法 | 优先级 | 工作量 | 说明 |
+|------|--------|--------|------|
+| **TOPSIS** | P0 | 2 人日 | 最热门距离算法 |
+| **SAW** | P1 | 0.5 人日 | WSM 变体，Minmax 标准化 |
+
+**总工作量**: **2.5 人日**
+
+**里程碑**:
+- [ ] 距离类算法支持
+- [ ] Vector 标准化集成（ADR-002）
+- [ ] 完整测试覆盖
+
+---
+
+#### v0.3: 高级算法（9 人日，2 周）
+
+**目标**: 支持复杂决策场景
+
+| 算法 | 优先级 | 工作量 | 说明 |
+|------|--------|--------|------|
+| **VIKOR** | P0 | 3 人日 | 唯一提供折衷解的算法 |
+| **PROMETHEE-II** | P1 | 4 人日 | 基于偏好函数 |
+| **COPRAS** | P1 | 2 人日 | 效用型，区分效益/成本 |
+
+**总工作量**: **9 人日**
+
+**里程碑**:
+- [ ] 支持复杂决策场景
+- [ ] 算法对比文档
+- [ ] 用户使用指南
+
+---
+
+#### v0.4: 特殊场景（16 人日，3-4 周）
+
+**目标**: 覆盖特殊决策需求
+
+| 算法 | 优先级 | 工作量 | 说明 |
+|------|--------|--------|------|
+| **TODIM** | P1 | 4 人日 | 考虑损失厌恶（前景理论） |
+| **ELECTRE-I** | P2 | 4 人日 | 支配关系筛选 |
+| **MACBETH** | P2 | 5 人日 | 定性偏好量化 |
+| **MOORA** | P2 | 2 人日 | 参考点法 |
+| **ORESTE** | P3 | 3 人日 | 数据不完整场景 |
+
+**总工作量**: **16 人日**
+
+**汇总算法总计**: **29.5 人日** (约 7-8 周)
+
+---
+
+### 4. 核心接口设计
+
+#### 4.1 算法抽象基类
+
 ```python
-class ScoringEngine:
-    """评分计算引擎"""
+# lib/algorithms/base.py
+from abc import ABC, abstractmethod
+from ..models import DecisionProblem, DecisionResult
+
+class MCDAAlgorithm(ABC):
+    """MCDA 算法基类"""
+
+    @abstractmethod
+    def calculate(self, problem: DecisionProblem) -> DecisionResult:
+        """执行计算，返回决策结果"""
+        pass
+
+    def validate(self, problem: DecisionProblem) -> ValidationResult:
+        """验证输入数据（可覆盖）"""
+        return ValidationResult(is_valid=True)
+
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """算法名称"""
+        pass
+
+    @property
+    def metadata(self) -> AlgorithmMetadata:
+        """算法元数据（默认实现）"""
+        return AlgorithmMetadata(
+            name=self.name,
+            version="1.0.0",
+            requires_normalized_weights=True,
+            score_range=(0, 100),
+        )
+```
+
+#### 4.2 算法注册机制
+
+```python
+# lib/algorithms/__init__.py
+from typing import Dict, Type, Callable
+
+_algorithms: Dict[str, Type[MCDAAlgorithm]] = {}
+
+def register_algorithm(name: str) -> Callable:
+    """算法注册装饰器"""
+    def decorator(cls: Type[MCDAAlgorithm]) -> Type[MCDAAlgorithm]:
+        _algorithms[name] = cls
+        return cls
+    return decorator
+
+def get_algorithm(name: str) -> MCDAAlgorithm:
+    """获取算法实例"""
+    if name not in _algorithms:
+        available = ", ".join(_algorithms.keys())
+        raise ValueError(f"未知的算法: '{name}'. 可用: {available}")
+    return _algorithms[name]()
+
+# 使用示例
+@register_algorithm("wsm")
+class WSMAlgorithm(MCDAAlgorithm):
+    ...
+```
+
+#### 4.3 统一结果接口
+
+```python
+# lib/models.py
+@dataclass
+class AggregationResult:
+    """汇总算法结果"""
+    algorithm_name: str
+    rankings: list[RankingItem]
+    raw_scores: dict[str, float]
+
+    # 算法特定指标
+    metrics: dict[str, Any] = field(default_factory=dict)
+    # 示例:
+    # - WSM: {"weighted_sums": {...}}
+    # - TOPSIS: {"closeness": {...}, "d_plus": {...}, "d_minus": {...}}
+    # - VIKOR: {"S": {...}, "R": {...}, "Q": {...}, "compromise_set": [...]}
+    # - PROMETHEE: {"phi_plus": {...}, "phi_minus": {...}, "phi": {...}}
+```
+
+---
+
+### 5. 核心算法实现
+
+#### 5.1 WSM (Weighted Sum Model)
+
+**公式**: `S_i = Σ w_j · r_ij`
+
+**适用场景**: 最通用、最直观的决策场景
+
+```python
+@register_algorithm("wsm")
+class WSMAlgorithm(MCDAAlgorithm):
+    """加权算术平均模型
+
+    公式: S_i = Σ w_j · r_ij
+    适用: 通用场景，准则间独立
+    """
+
+    @property
+    def name(self) -> str:
+        return "wsm"
+
+    def calculate(self, problem: DecisionProblem) -> DecisionResult:
+        scores = {}
+        for alt in problem.alternatives:
+            weighted_sum = 0.0
+            for crit in problem.criteria:
+                value = problem.scores[alt][crit.name]
+                # 处理 lower_better（方向反转）
+                if crit.direction == "lower_better":
+                    value = self._invert(value, problem, crit.name)
+                weighted_sum += crit.weight * value
+            scores[alt] = weighted_sum
+
+        # 排序
+        sorted_alts = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        rankings = [
+            RankingItem(rank=i, alternative=alt, score=round(score, 4))
+            for i, (alt, score) in enumerate(sorted_alts, 1)
+        ]
+
+        return DecisionResult(
+            rankings=rankings,
+            raw_scores=scores,
+            metadata=ResultMetadata(
+                algorithm_name=self.name,
+                problem_size=(len(problem.alternatives), len(problem.criteria)),
+            ),
+            metrics={"weighted_sums": scores},
+        )
+```
+
+**工作量**: 1 人日
+
+---
+
+#### 5.2 WPM (Weighted Product Model)
+
+**公式**: `P_i = Π r_ij^w_j`
+
+**适用场景**: 准则间有乘积效应、"短板效应"
+
+```python
+@register_algorithm("wpm")
+class WPMAlgorithm(MCDAAlgorithm):
+    """加权几何平均模型
+
+    公式: P_i = Π r_ij^w_j
+    适用: 准则间有相互作用，强调短板
+    """
+
+    @property
+    def name(self) -> str:
+        return "wpm"
+
+    def calculate(self, problem: DecisionProblem) -> DecisionResult:
+        scores = {}
+        for alt in problem.alternatives:
+            product = 1.0
+            for crit in problem.criteria:
+                value = problem.scores[alt][crit.name]
+                if crit.direction == "lower_better":
+                    value = self._invert(value, problem, crit.name)
+                # 避免 0 值，加一个小常数
+                value = max(value, 1e-10)
+                product *= value ** crit.weight
+            scores[alt] = product
+
+        # 排序
+        sorted_alts = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        rankings = [
+            RankingItem(rank=i, alternative=alt, score=round(score, 4))
+            for i, (alt, score) in enumerate(sorted_alts, 1)
+        ]
+
+        return DecisionResult(
+            rankings=rankings,
+            raw_scores=scores,
+            metadata=ResultMetadata(
+                algorithm_name=self.name,
+                problem_size=(len(problem.alternatives), len(problem.criteria)),
+            ),
+            metrics={"products": scores},
+        )
+```
+
+**工作量**: 1 人日
+
+---
+
+#### 5.3 TOPSIS
+
+**公式**:
+1. 标准化: `r_ij = x_ij / sqrt(Σ x_ij²)` ← 需要 Vector 标准化
+2. 加权标准化: `v_ij = w_j · r_ij`
+3. 距离: `D_i⁺ = sqrt(Σ (v_ij - v_j⁺)²)`, `D_i⁻ = sqrt(Σ (v_ij - v_j⁻)²)`
+4. 相对接近度: `C_i = D_i⁻ / (D_i⁺ + D_i⁻)`
+
+**适用场景**: 需要距离概念的决策，TOPSIS 是最热门距离算法
+
+```python
+@register_algorithm("topsis")
+class TOPSISAlgorithm(MCDAAlgorithm):
+    """逼近理想解排序法
+
+    核心思想: 距离正理想解最近，同时距离负理想解最远
+    公式: C_i = D_i⁻ / (D_i⁺ + D_i⁻)
+    适用: 需要距离概念的决策场景
+    """
+
+    @property
+    def name(self) -> str:
+        return "topsis"
+
+    @property
+    def metadata(self) -> AlgorithmMetadata:
+        return AlgorithmMetadata(
+            name=self.name,
+            version="1.0.0",
+            requires_normalized_weights=True,
+            requires_normalization="vector",  # 必须使用 Vector 标准化
+            score_range=(0, 1),
+        )
+
+    def calculate(self, problem: DecisionProblem) -> DecisionResult:
+        import numpy as np
+
+        # 1. 构建决策矩阵
+        m = len(problem.alternatives)
+        n = len(problem.criteria)
+        X = np.zeros((m, n))
+
+        for i, alt in enumerate(problem.alternatives):
+            for j, crit in enumerate(problem.criteria):
+                X[i, j] = problem.scores[alt][crit.name]
+
+        # 2. Vector 标准化
+        norms = np.sqrt(np.sum(X ** 2, axis=0))
+        R = X / norms
+
+        # 3. 加权标准化
+        weights = np.array([c.weight for c in problem.criteria])
+        V = R * weights
+
+        # 4. 确定理想解（正负理想解）
+        v_plus = np.max(V, axis=0)  # 正理想解
+        v_minus = np.min(V, axis=0)  # 负理想解
+
+        # 5. 计算距离
+        D_plus = np.sqrt(np.sum((V - v_plus) ** 2, axis=1))
+        D_minus = np.sqrt(np.sum((V - v_minus) ** 2, axis=1))
+
+        # 6. 计算相对接近度
+        C = D_minus / (D_plus + D_minus)
+
+        scores = {alt: C[i] for i, alt in enumerate(problem.alternatives)}
+
+        # 排序
+        sorted_alts = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        rankings = [
+            RankingItem(rank=i, alternative=alt, score=round(score, 4))
+            for i, (alt, score) in enumerate(sorted_alts, 1)
+        ]
+
+        return DecisionResult(
+            rankings=rankings,
+            raw_scores=scores,
+            metadata=ResultMetadata(
+                algorithm_name=self.name,
+                problem_size=(len(problem.alternatives), len(problem.criteria)),
+            ),
+            metrics={
+                "closeness": scores,
+                "d_plus": {alt: D_plus[i] for i, alt in enumerate(problem.alternatives)},
+                "d_minus": {alt: D_minus[i] for i, alt in enumerate(problem.alternatives)},
+            },
+        )
+```
+
+**工作量**: 2 人日
+
+---
+
+#### 5.4 VIKOR
+
+**公式**:
+- 群体效用: `S_i = Σ w_j · (x_j^max - x_ij) / (x_j^max - x_j^min)`
+- 个别遗憾: `R_i = max_j [w_j · (x_j^max - x_ij) / (x_j^max - x_j^min)]`
+- 折衷值: `Q_i = v · (S_i - S_min) / (S_max - S_min) + (1-v) · (R_i - R_min) / (R_max - R_min)`
+
+**适用场景**: 需要折衷解的决策，同时优化群体效用和个别遗憾
+
+```python
+@register_algorithm("vikor")
+class VIKORAlgorithm(MCDAAlgorithm):
+    """折衷排序法
+
+    核心思想: 同时最大化群体效用和最小化个别遗憾
+    参数 v: 决策策略系数（0-1），v=0.5 为折衷
+    适用: 需要折衷解的决策场景
+    """
+
+    def __init__(self, v: float = 0.5):
+        self.v = v  # 决策策略系数
+
+    @property
+    def name(self) -> str:
+        return "vikor"
+
+    def calculate(self, problem: DecisionProblem, v: float = 0.5) -> DecisionResult:
+        import numpy as np
+
+        # 1. 标准化到 [0, 1]
+        normalized = self._normalize(problem)
+
+        # 2. 计算群体效用 S_i 和个别遗憾 R_i
+        S = {}
+        R = {}
+        for alt in problem.alternatives:
+            s_i = 0.0
+            r_max = 0.0
+            for crit in problem.criteria:
+                f = normalized[alt][crit.name]
+                s_i += crit.weight * f
+                r_max = max(r_max, crit.weight * f)
+            S[alt] = s_i
+            R[alt] = r_max
+
+        # 3. 计算 Q_i
+        S_min, S_max = min(S.values()), max(S.values())
+        R_min, R_max = min(R.values()), max(R.values())
+
+        Q = {}
+        for alt in problem.alternatives:
+            q = v * (S[alt] - S_min) / (S_max - S_min) + \
+                (1 - v) * (R[alt] - R_min) / (R_max - R_min)
+            Q[alt] = q
+
+        # 4. 确定折衷解（同时优化 S, R, Q）
+        # ... 折衷解判定逻辑
+
+        # 排序（按 Q 值）
+        sorted_alts = sorted(Q.items(), key=lambda x: x[1])
+        rankings = [
+            RankingItem(rank=i, alternative=alt, score=round(score, 4))
+            for i, (alt, score) in enumerate(sorted_alts, 1)
+        ]
+
+        return DecisionResult(
+            rankings=rankings,
+            raw_scores=Q,
+            metadata=ResultMetadata(
+                algorithm_name=self.name,
+                problem_size=(len(problem.alternatives), len(problem.criteria)),
+            ),
+            metrics={
+                "Q": Q,
+                "S": S,  # 群体效用
+                "R": R,  # 个别遗憾
+                "v": v,
+            },
+        )
+```
+
+**工作量**: 3 人日
+
+---
+
+#### 5.5 PROMETHEE-II
+
+**核心**: 基于偏好函数的流出/流入量
+
+**适用场景**: 需要定义偏好关系的决策
+
+```python
+@register_algorithm("promethee2")
+class PROMETHEE2Algorithm(MCDAAlgorithm):
+    """优先排序法 II
+
+    核心思想: 基于偏好函数计算流出量和流入量
+    公式: Φ = Φ⁺ - Φ⁻
+    适用: 需要明确偏好关系的决策场景
+    """
+
+    @property
+    def name(self) -> str:
+        return "promethee2"
 
     def calculate(
         self,
-        raw_value: float | str | int,
-        criterion: Criterion
-    ) -> float:
-        """根据评分规则计算评分（0-100）"""
-        if criterion.scoring_rule is None:
-            raise ScoringError(f"准则 '{criterion.name}' 未配置评分规则")
+        problem: DecisionProblem,
+        pref_type: str = "usual",
+        p: float = 0.5,  # 线性偏好函数阈值
+        q: float = 0.2,  # 准偏好函数阈值
+    ) -> DecisionResult:
+        import numpy as np
 
-        numeric_value = self._to_numeric(raw_value)
-        rule = criterion.scoring_rule
+        # 1. 定义偏好函数
+        def preference_function(d, p_type="usual", p=0.5, q=0.2):
+            """d = a - b (方案a对b的优势)"""
+            if p_type == "usual":
+                return 1 if d > 0 else 0
+            elif p_type == "linear":
+                return max(0, min(1, d / p))
+            elif p_type == "quasi":
+                return 1 if d > q else 0
+            # ... 其他偏好函数
 
-        if isinstance(rule, LinearScoringRule):
-            return rule.calculate(numeric_value, criterion.direction)
-        elif isinstance(rule, ThresholdScoringRule):
-            return rule.calculate(numeric_value, criterion.direction)
-        else:
-            raise ScoringError(f"不支持的评分规则类型: {type(rule)}")
+        # 2. 计算成对偏好
+        m = len(problem.alternatives)
+        pi = np.zeros((m, m))
 
-    def calculate_batch(
-        self,
-        raw_data: dict[str, dict[str, float | str]],
-        criteria: tuple[Criterion, ...]
-    ) -> dict[str, dict[str, float]]:
-        """批量计算评分"""
-        scores = {}
-        for alt, raw_values in raw_data.items():
-            scores[alt] = {}
-            for criterion in criteria:
-                if criterion.name not in raw_values:
-                    continue
-                raw_value = raw_values[criterion.name]
-                scores[alt][criterion.name] = self.calculate(raw_value, criterion)
-        return scores
+        for i, a in enumerate(problem.alternatives):
+            for j, b in enumerate(problem.alternatives):
+                for crit in problem.criteria:
+                    d = problem.scores[a][crit.name] - \
+                        problem.scores[b][crit.name]
+                    pi[i, j] += crit.weight * preference_function(d, pref_type, p, q)
+
+        # 3. 计算流出量和流入量
+        phi_plus = np.sum(pi, axis=1)  # 流出量
+        phi_minus = np.sum(pi, axis=0)  # 流入量
+
+        # 4. 计算净流量
+        phi = phi_plus - phi_minus
+
+        scores = {alt: phi[i] for i, alt in enumerate(problem.alternatives)}
+
+        # 排序
+        sorted_alts = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        rankings = [
+            RankingItem(rank=i, alternative=alt, score=round(score, 4))
+            for i, (alt, score) in enumerate(sorted_alts, 1)
+        ]
+
+        return DecisionResult(
+            rankings=rankings,
+            raw_scores=scores,
+            metadata=ResultMetadata(
+                algorithm_name=self.name,
+                problem_size=(len(problem.alternatives), len(problem.criteria)),
+            ),
+            metrics={
+                "phi": scores,
+                "phi_plus": {alt: phi_plus[i] for i, alt in enumerate(problem.alternatives)},
+                "phi_minus": {alt: phi_minus[i] for i, alt in enumerate(problem.alternatives)},
+            },
+        )
 ```
 
-### ScoringService（评分服务）
-```python
-class ScoringService:
-    """评分服务（对外接口）"""
+**工作量**: 4 人日
 
-    def apply_scoring_rules(
-        self,
-        problem: DecisionProblem
-    ) -> dict[str, dict[str, float]]:
-        """应用评分规则，生成评分矩阵
+---
 
-        工作流程：
-        1. 如果有 raw_data，使用评分规则计算
-        2. 如果已有 scores，验证 0-100 范围
-        3. 返回标准化的评分矩阵
-        """
-        if problem.raw_data is not None:
-            return self._engine.calculate_batch(
-                problem.raw_data,
-                problem.criteria
-            )
-        elif problem.scores is not None:
-            return self._validate_score_range(problem.scores, problem.score_range)
-        else:
-            raise ScoringError("决策问题必须包含 raw_data 或 scores")
+### 6. 算法分类与对比
+
+#### 6.1 算法分类体系
+
+```
+MCDAAlgorithm (抽象基类)
+    │
+    ├── LinearAggregation (线性聚合)
+    │   ├── WSM (加权算术平均)
+    │   ├── WPM (加权几何平均)
+    │   └── SAW (简单加权)
+    │
+    ├── DistanceBased (距离类)
+    │   ├── TOPSIS (逼近理想解)
+    │   └── VIKOR (折衷排序)
+    │
+    ├── PreferenceBased (偏好类)
+    │   ├── PROMETHEE-II (优先排序)
+    │   └── ELECTRE-I (消除选择)
+    │
+    └── UtilityBased (效用类)
+        ├── COPRAS (复杂比例)
+        ├── MOORA (比率分析)
+        └── TODIM (前景理论)
 ```
 
-### DataSourceService（数据源服务）
-```python
-class DataSourceService:
-    """数据源服务"""
+#### 6.2 算法对比矩阵
 
-    def load(self, source: DataSource) -> dict[str, dict[str, float | str]]:
-        """加载数据源
+| 算法 | 适用场景 | 优点 | 缺点 | 推荐度 |
+|------|----------|------|------|--------|
+| **WSM** | 通用决策 | 最简单、直观 | 准则间独立 | ⭐⭐⭐⭐⭐ |
+| **WPM** | 短板效应 | 考虑准则间相互作用 | 对零值敏感 | ⭐⭐⭐⭐ |
+| **TOPSIS** | 距离相关 | 考虑理想解距离 | 不保序 | ⭐⭐⭐⭐⭐ |
+| **VIKOR** | 折衷决策 | 提供折衷解 | 参数调优复杂 | ⭐⭐⭐⭐ |
+| **SAW** | 快速决策 | WSM 变体 | 与 WSM 类似 | ⭐⭐⭐ |
+| **PROMETHEE-II** | 偏好关系 | 偏好函数灵活 | 需要定义偏好 | ⭐⭐⭐⭐ |
+| **COPRAS** | 效用明确 | 区分效益/成本 | 场景受限 | ⭐⭐⭐ |
+| **MOORA** | 参考点法 | 双重评分 | 理解复杂 | ⭐⭐⭐ |
+| **ELECTRE-I** | 支配筛选 | 处理不完整信息 | 阈值敏感 | ⭐⭐⭐ |
+| **TODIM** | 风险敏感 | 前景理论 | 参数复杂 | ⭐⭐⭐ |
+| **MACBETH** | 定性量化 | 转换定性偏好 | 实施复杂 | ⭐⭐ |
+| **ORESTE** | 数据缺失 | 不完整数据 | 应用面窄 | ⭐⭐ |
 
-        支持格式：
-        - yaml: YAML 配置文件
-        - csv: CSV 表格文件
-        - excel: Excel 工作表（需 openpyxl）
-        """
-        for loader in self._loaders:
-            if loader.can_handle(source):
-                return loader.load(source)
-        raise ValueError(f"不支持的数据源类型: {source.type}")
-```
+---
+
+### 7. 依赖决策
+
+| 算法 | 核心依赖 | 可选依赖 | 说明 |
+|------|---------|----------|------|
+| WSM, WPM, SAW | Python 标准库 | - | 零外部依赖 |
+| TOPSIS, VIKOR, COPRAS | numpy | - | 矩阵运算 |
+| PROMETHEE-II, MOORA | numpy | - | 矩阵运算 |
+| ELECTRE-I, TODIM, MACBETH | numpy | - | 矩阵运算 |
+
+**策略**: 全部算法仅需 numpy，符合"最小依赖原则"
 
 ---
 
 ## 权衡分析 (Trade-offs)
 
-### 决策 1: 评分计算层的位置
-
-| 选项 | 优点 | 缺点 | 决策 |
-|------|------|------|------|
-| **核心服务层** | 复用好，所有算法共享 | 职责过重，违反单一职责 | ❌ |
-| **独立层（推荐）** | 职责清晰，易测试和扩展 | 增加一层抽象 | ✅ 采用 |
-| **算法抽象层** | 算法可自定义评分 | 代码重复，不一致 | ❌ |
-
-**决策**: 独立层，理由：
-1. 评分是算法的通用前置步骤
-2. 保持算法层纯粹（只负责聚合）
-3. 便于单元测试
-
-### 决策 2: Excel 支持方式
+### 决策 1: v0.1 MVP 算法选择
 
 | 方案 | 优点 | 缺点 | 决策 |
 |------|------|------|------|
-| **标准库 csv + 可选 openpyxl** | 轻量、按需安装 | Excel 功能受限 | ✅ 采用 |
-| **pandas** | 功能强大、统一接口 | 依赖重（100MB+） | ❌ 放弃 |
-| **仅 CSV，不支持 Excel** | 最轻量 | 用户体验差 | ❌ 放弃 |
+| **仅 WSM** | 最简单，快速验证 | 算法单一 | ❌ |
+| **WSM + WPM** | 线性+非线性，验证架构 | 工作量略增 | ✅ 采用 |
+| **WSM + TOPSIS** | 线性+距离，覆盖广 | 工作量大 | ❌ |
 
-### 决策 3: 评分规则类型
+**决策**: WSM + WPM，理由：
+- WSM 验证可插拔架构
+- WPM 提供非线性视角，与 WSM 互补
+- 工作量小（2人日），快速交付
 
-| 类型 | 适用场景 | 复杂度 | 是否支持 |
-|------|---------|--------|---------|
-| **Linear** | 连续数值（成本、时间、百分比） | 低 | ✅ v0.1 |
-| **Threshold** | 分段评分（等级划分） | 中 | ✅ v0.1 |
-| **Inverse** | 反向映射（lower_better 专用） | 低 | ⏳ v0.2 |
-| **Custom** | 自定义函数 | 高 | ⏳ v0.3 |
+### 决策 2: TOPSIS 实施时机
 
----
+| 方案 | 优点 | 缺点 | 决策 |
+|------|------|------|------|
+| **v0.1 包含 TOPSIS** | 一步到位 | MVP 太重 | ❌ |
+| **v0.2 包含 TOPSIS** | 平衡复杂度 | 延迟热门算法 | ✅ 采用 |
+| **v0.3 包含 TOPSIS** | 风险最低 | 影响用户价值 | ❌ |
 
-## 实施影响
+**决策**: v0.2 实施 TOPSIS，理由：
+- v0.1 专注架构验证
+- v0.2 引入距离类算法，提升决策精度
+- TOPSIS 是最热门距离算法（5.0 热度）
 
-### 数据模型变更
-```python
-# 修改前
-@dataclass(frozen=True)
-class Criterion:
-    name: str
-    weight: float
-    direction: Direction
-    description: str = ""
+### 决策 3: VIKOR 实施优先级
 
-# 修改后
-@dataclass(frozen=True)
-class Criterion:
-    name: str
-    weight: float
-    direction: Direction
-    description: str = ""
-    scoring_rule: ScoringRule | None = None  # NEW
-    column: str | None = None                # NEW
-```
+| 方案 | 优点 | 缺点 | 决策 |
+|------|------|------|------|
+| **v0.2 包含 VIKOR** | 快速提供折衷解 | 实施压力大 | ❌ |
+| **v0.3 包含 VIKOR** | 作为高级算法 | 延迟折衷能力 | ✅ 采用 |
+| **v0.4 包含 VIKOR** | 风险最低 | 用户需求延迟 | ❌ |
 
-### YAML 配置示例（v2.0）
-```yaml
-data_source:
-  type: excel
-  file: data/vendor_data.xlsx
-  sheet: 决策数据
+**决策**: v0.3 实施 VIKOR，理由：
+- VIKOR 是唯一提供折衷解的算法
+- v0.3 作为高级算法，专注复杂决策场景
+- 避免过早优化
 
-alternatives:
-  - AWS
-  - Azure
-  - GCP
+### 正面影响 ✅
+1. **清晰路线图**: 分 4 个阶段，每个阶段都有明确交付目标
+2. **优先级合理**: 平衡热度、难度、价值
+3. **架构可扩展**: 统一接口，易于添加新算法
+4. **向后兼容**: 不破坏已实现的算法
+5. **最小依赖**: 仅需 numpy，符合轻量原则
 
-criteria:
-  - name: 成本
-    weight: 0.35
-    direction: lower_better
-    column: 成本(万元)        # 映射到 Excel 列
-    scoring_rule:
-      type: linear
-      min: 0
-      max: 100
-      scale: 100
+### 负面影响 ⚠️
+1. **开发周期长**: 完整实施需要 7-8 周
+2. **学习曲线**: 用户需要理解不同算法的适用场景
+3. **算法选择困难**: 多种算法可能让用户困惑
 
-  - name: 响应时间
-    weight: 0.20
-    direction: lower_better
-    column: 响应时间
-    scoring_rule:
-      type: threshold
-      ranges:
-        - {max: 100, score: 100}
-        - {min: 100, max: 500, score: 80}
-        - {min: 500, max: 1000, score: 60}
-        - {min: 1000, score: 40}
-
-algorithm:
-  name: wsm
-```
-
-### 新增文件
-- `lib/scoring.py` - 评分计算引擎
-- `lib/data_source.py` - 数据源服务
-- `tests/test_scoring.py` - 评分引擎测试
-- `tests/test_data_source.py` - 数据源测试
-
-### 修改文件
-- `lib/models.py` - 扩展数据模型
-- `lib/validation.py` - 更新 0-100 验证
-- `lib/algorithms/wsm.py` - 无需实质修改（WSM 算法与评分范围无关）
+### 缓解措施 🛡️
+1. **MVP 优先**: v0.1 先交付 WSM + WPM，验证架构
+2. **算法推荐**: 根据决策场景自动推荐算法
+3. **完善文档**: 每种算法的使用场景和示例
+4. **渐进式披露**: v0.1-v0.2 覆盖 80% 用户需求
 
 ---
 
 ## 后果 (Consequences)
 
-### 正面影响 ✅
-1. **用户体验提升**: 0-100 分制更直观
-2. **自动化程度提高**: 评分规则自动计算，无需手动转换
-3. **数据来源灵活**: 支持 Excel/CSV，降低使用门槛
-4. **扩展性增强**: 新增评分规则类型无需修改核心代码
+### 对开发的影响
+- **v0.1** (2人日): MVP 验证，WSM + WPM
+- **v0.2** (2.5人日): 基础扩展，+ TOPSIS + SAW
+- **v0.3** (9人日): 高级算法，+ VIKOR + PROMETHEE-II + COPRAS
+- **v0.4** (16人日): 特殊场景，+ TODIM + ELECTRE-I + MACBETH + MOORA + ORESTE
 
-### 负面影响 ⚠️
-1. **复杂度增加**: 新增评分计算层，理解成本上升
-2. **实施周期延长**: 预计增加 4-5 小时开发时间
-3. **依赖管理**: Excel 支持需要处理可选依赖
+### 对用户的影响
+- **早期用户** (v0.1-v0.2): 可用线性+距离算法，覆盖 80% 场景
+- **中期用户** (v0.3): 支持折衷解和偏好关系
+- **成熟用户** (v0.4): 覆盖特殊决策需求
 
-### 缓解措施 🛡️
-1. **渐进式披露**: 基础使用无需评分规则（直接提供 scores）
-2. **文档完善**: 提供评分规则配置示例
-3. **友好提示**: 未安装 openpyxl 时给出安装指引
-4. **单元测试**: 确保评分引擎测试覆盖率 ≥ 85%
+### 对架构的影响
+- **新增模块**: `lib/algorithms/` （算法实现）
+- **模块依赖**: 算法层依赖标准化层（ADR-002）和赋权层（ADR-003）
+- **接口扩展**: `DecisionProblem` 增加 `algorithm` 字段
 
 ---
 
 ## 未来演进
 
-### v0.1 (MVP)
-- ✅ 0-100 分制
-- ✅ LinearScoringRule
-- ✅ ThresholdScoringRule
-- ✅ CSV 支持（标准库）
-- ✅ Excel 支持（可选 openpyxl）
+### 短期 (v0.1 - 2周)
+- WSM, WPM（线性+非线性）
+- 算法注册机制
 
-### v0.2
-- ⏳ InverseScoringRule
-- ⏳ 更多阈值规则类型
-- ⏳ Google Sheets 导入
+### 中期 (v0.2 - v0.3, 4-6周)
+- TOPSIS, SAW（距离类）
+- VIKOR, PROMETHEE-II, COPRAS（高级）
 
-### v0.3
-- ⏳ CustomScoringRule（自定义函数）
-- ⏳ 评分规则模板库
-- ⏳ 数据验证增强（异常值检测）
+### 长期 (v0.4, 7-8周)
+- TODIM, ELECTRE-I, MACBETH, MOORA, ORESTE（特殊场景）
+
+### 可选扩展 (v1.0+)
+- 算法组合（如 WSM + TOPSIS 混合）
+- 自定义算法插件
+- Web UI 算法选择器
+
+---
+
+## 算法选择指南
+
+### 场景映射表
+
+| 决策场景 | 推荐算法 | 理由 |
+|----------|----------|------|
+| 快速决策，准则独立 | **WSM** | 最简单、最直观 |
+| 强调短板效应 | **WPM** | 几何平均，低分拖累 |
+| 需要距离概念 | **TOPSIS** | 最热门距离算法 |
+| 需要折衷解 | **VIKOR** | 唯一提供折衷解 |
+| 明确偏好关系 | **PROMETHEE-II** | 偏好函数灵活 |
+| 风险敏感 | **TODIM** | 前景理论，损失厌恶 |
+
+### 算法组合建议
+
+| 组合 | 适用场景 |
+|------|----------|
+| WSM + TOPSIS | 通用决策（线性+距离验证） |
+| WSM + WPM | 准则独立 vs 相互作用对比 |
+| WSM + VIKOR | 常规排名 + 折衷解验证 |
+| TOPSIS + VIKOR | 距离类双验证 |
 
 ---
 
 ## 参考资料
-- [ADR-001: MCDA Core 分层架构设计](./001-mcda-layered-architecture.md)
-- [ADR-002: 评分标准化方法](./002-mcda-normalization-methods.md)
+
+### 学术文献
+- [Comparison of Aggregation Methods in MCDA](https://www.sciencedirect.com/science/article/pii/S136481521500001X)
+- [TOPSIS Method: A Comprehensive Review](https://www.sciencedirect.com/science/article/pii/S0957417416306298)
+- [VIKOR Method with Applications](https://www.sciencedirect.com/science/article/pii/S036083521100218X)
+
+### 相关文档
+- [ADR-001: 分层架构设计](./001-mcda-layered-architecture.md)
+- [ADR-002: 标准化方法](./002-mcda-normalization-methods.md)
 - [ADR-003: 赋权方法路线图](./003-mcda-weighting-roadmap.md)
-- [Python csv 模块文档](https://docs.python.org/3/library/csv.html)
-- [openpyxl 文档](https://openpyxl.readthedocs.io/)
+- [需求文档: MCDA Core v2.0](../requirements/mcda-core.md)
 
 ---
 
 **决策者**: hunkwk + AI architect agent
 **批准日期**: 2026-01-31
-**状态**: 已接受，v0.1 实施
+**状态**: ✅ 已批准
+**总工作量**: 29.5 人日 (约 7-8 周)
