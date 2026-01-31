@@ -20,10 +20,10 @@ Desktop.ini
 .claude/cache/
 .claude/plugins/cache/
 .claude/session_history/
-CLAUDE.md
+
 
 # OpenCode
-AGENTS.md
+
 
 # Logs
 *.log
