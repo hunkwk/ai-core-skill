@@ -38,6 +38,10 @@ MCDA Core 需要支持多种决策分析算法（WSM、AHP、TOPSIS、ELECTRE）
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐ │
 │  │   验证服务   │  │  报告服务   │  │   敏感性分析服务        │ │
 │  └─────────────┘  └─────────────┘  └─────────────────────────┘ │
+│  ┌─────────────┐  ┌─────────────┐                              │
+│  │ 标准化服务  │  │  赋权服务   │ ← ADR-002/003               │
+│  │(ADR-002)   │  │(ADR-003)   │                              │
+│  └─────────────┘  └─────────────┘                              │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -53,7 +57,8 @@ MCDA Core 需要支持多种决策分析算法（WSM、AHP、TOPSIS、ELECTRE）
 │          ┌───────────────┼───────────────┐                     │
 │          │               │               │                     │
 │    ┌─────┴─────┐  ┌─────┴─────┐  ┌─────┴─────┐               │
-│    │   WSM     │  │   AHP     │  │  TOPSIS   │  (可插拔)       │
+│    │   WSM     │  │  TOPSIS   │  │   VIKOR   │  (可插拔)       │
+│    │   WPM     │  │           │  │           │  (ADR-004)      │
 │    └───────────┘  └───────────┘  └───────────┘               │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -89,6 +94,8 @@ class Criterion:
     weight: float
     direction: Literal["higher_better", "lower_better"]
     description: str = ""
+    # 新增：标准化配置（ADR-002）
+    normalization: NormalizationConfig | None = None
 
 @dataclass(frozen=True)
 class DecisionProblem:
@@ -97,6 +104,8 @@ class DecisionProblem:
     criteria: tuple[Criterion, ...]
     scores: dict[str, dict[str, float]]
     algorithm: AlgorithmConfig
+    # 新增：赋权配置（ADR-003）
+    weighting: WeightingConfig | None = None
 
 @dataclass
 class DecisionResult:
@@ -327,21 +336,33 @@ class ValidationService:
 - **纯 CLI 工具**: 无需 Web 服务器，部署简单
 - **跨平台**: Windows/Linux/macOS 通用
 
+### 对架构的影响（v0.2 MVP）
+- **新增标准化服务** (ADR-002): MinMax + Vector 标准化方法，支持 TOPSIS 算法
+- **新增赋权服务** (ADR-003): 直接赋权方法（用户手动指定权重）
+- **算法扩展**: TOPSIS（必需 Vector 标准化）+ VIKOR（唯一折衷解算法）
+- **数据流向**: 原始数据 → 标准化 → 赋权 → 汇总 → 排名（完整 MCDA 决策流程）
+
 ---
 
 ## 未来演进路径
 
-### 短期 (v0.1 - v0.2)
-- ✅ 实现 WSM 算法
-- ✅ 实现核心服务层
-- ✅ 完善测试覆盖率
+### 短期 (v0.2 - MVP, 2 周)
+- ✅ 实现 WSM + WPM 算法（线性 + 非线性聚合）
+- ✅ 实现 TOPSIS + VIKOR 算法（距离类 + 折衷解）
+- ✅ MinMax + Vector 标准化方法（ADR-002）
+- ✅ 直接赋权方法（ADR-003）
+- ✅ 完善测试覆盖率 >= 80%
 
-### 中期 (v0.3 - v0.4)
-- ⏳ 添加 AHP 算法（验证可插拔性）
-- ⏳ 添加 TOPSIS 算法
+### 中期 (v0.3, 4 周)
+- ⏳ 添加 PROMETHEE-II + COPRAS 算法（偏好 + 效用类）
+- ⏳ Z-Score + Sum + Inverse 标准化方法
+- ⏳ 熵权法 + AHP 赋权方法（主客观赋权）
+
+### 长期 (v0.4+, 6+ 周)
+- ⏳ SAW + TODIM + ELECTRE-I 等高级算法
+- ⏳ Max + Threshold + Logarithmic + Sigmoid 标准化
+- ⏳ CRITIC + 变异系数法等高级赋权方法
 - ⏳ 支持自定义输出格式（HTML、PDF）
-
-### 长期 (v1.0+)
 - ⏳ Web UI 界面（可选）
 - ⏳ 数据库持久化
 - ⏳ 分布式计算支持（大规模决策问题）
@@ -358,4 +379,6 @@ class ValidationService:
 
 **决策者**: hunkwk + AI architect agent
 **批准日期**: 2026-01-31
-**状态**: 已实施 (v0.1 - WSM 算法)
+**最后更新**: 2026-01-31（同步 MVP 优先级调整）
+**状态**: 已接受，v0.2 MVP 实施中
+**实施范围**: WSM + WPM + TOPSIS + VIKOR，MinMax + Vector 标准化，直接赋权
