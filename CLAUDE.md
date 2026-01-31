@@ -202,6 +202,96 @@ skills/
 
 ---
 
+## 🔀 Git Flow Workflow
+
+Simplified Git Flow optimized for individual developer + AI collaboration.
+
+### Branch Strategy
+
+```
+main           → Production branch (always deployable)
+develop        → Development integration branch
+feature/xxx    → New features (from develop)
+fix/xxx        → Bug fixes (from develop)
+hotfix/xxx     → Emergency fixes (from main)
+experiment/xxx → Experimental features (can be discarded)
+```
+
+### Branch Naming Convention
+
+- `feature/<short-desc>` - New feature development (e.g., `feature/user-auth`)
+- `fix/<issue-desc>` - Bug fixing (e.g., `fix/login-crash`)
+- `hotfix/<urgent-desc>` - Emergency production fix (e.g., `hotfix/payment-failure`)
+- `experiment/<name>` - Experimental features (e.g., `experiment/ai-suggestions`)
+
+**Rules**: lowercase, hyphen-separated, concise (2-3 words)
+
+### Conventional Commits
+
+Format: `<type>(<scope>): <subject>`
+
+**Types**:
+- `feat` - New feature
+- `fix` - Bug fix
+- `docs` - Documentation changes
+- `style` - Code formatting
+- `refactor` - Code refactoring
+- `perf` - Performance optimization
+- `test` - Testing related
+- `chore` - Build/tooling changes
+
+**Example**:
+```
+feat(ai): add semantic search capability
+
+- Implement vector-based pattern matching
+- Add comprehensive tests (90% coverage)
+- Update documentation
+```
+
+### Workflows
+
+**Feature Development**:
+```bash
+git checkout develop && git pull
+git checkout -b feature/your-feature
+# /plan  # For complex features
+# /tdd   # Test-driven development
+# Run tests and lint before commit
+git commit -m "feat: add xxx"
+git push
+git checkout develop && git merge feature/your-feature
+```
+
+**Bug Fix**:
+```bash
+git checkout develop
+git checkout -b fix/bug-name
+# /tdd  # Write failing test first
+# ... fix ...
+git commit -m "fix: resolve xxx issue"
+```
+
+**Emergency Fix**:
+```bash
+git checkout main
+git checkout -b hotfix/critical-fix
+# ... quick fix ...
+git commit -m "hotfix: urgent fix for xxx"
+git checkout main && git merge hotfix/critical-fix
+git checkout develop && git merge hotfix/critical-fix
+```
+
+### Best Practices
+
+1. **Keep branches short-lived** - Feature branches ≤ 3 days
+2. **Atomic commits** - One change per commit
+3. **Frequent integration** - Merge to develop regularly
+4. **Clean up** - Delete merged branches
+5. **Keep develop deployable** - Always in working state
+
+---
+
 ## Development Workflow
 
 1. `/plan` - Create implementation approach
