@@ -460,6 +460,31 @@ class DecisionResult:
 
 
 # =============================================================================
+# 标准化数据模型
+# =============================================================================
+
+NormalizationType = Literal["minmax", "vector"]
+"""标准化方法类型"""
+
+
+@dataclass(frozen=True)
+class NormalizationConfig:
+    """标准化配置
+
+    Attributes:
+        type: 标准化方法类型（minmax, vector 或其他自定义方法）
+        direction: 方向（higher_better 越高越好, lower_better 越低越好）
+    """
+    type: str  # 改为 str 以支持任意方法名
+    direction: Direction = "higher_better"
+
+    def __post_init__(self):
+        """验证配置有效性"""
+        if self.direction not in ("higher_better", "lower_better"):
+            raise ValueError(f"NormalizationConfig: 不支持的方向 '{self.direction}'")
+
+
+# =============================================================================
 # 导出公共 API
 # =============================================================================
 
@@ -468,6 +493,7 @@ __all__ = [
     "Direction",
     "ScoreMatrix",
     "ScoreRange",
+    "NormalizationType",
     # 评分规则
     "LinearScoringRule",
     "ThresholdRange",
@@ -484,4 +510,6 @@ __all__ = [
     "PerturbationResult",
     "SensitivityResult",
     "DecisionResult",
+    # 标准化
+    "NormalizationConfig",
 ]
