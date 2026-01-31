@@ -31,6 +31,61 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ---
 
+## 📚 Documentation Structure
+
+Centralized documentation in `docs/` directory for AI-human collaboration.
+
+### Directory Layout
+
+```
+docs/
+├── README.md / README_CN.md        # Documentation index
+├── requirements/                    # Requirements analysis
+│   ├── README.md
+│   └── README_CN.md
+├── plans/                          # Implementation plans (versioned)
+│   ├── README.md
+│   ├── roadmap.md                  # Version roadmap
+│   └── v0.1/
+│       └── summary.md
+├── active/                         # **Execution progress tracking**
+│   ├── README.md
+│   └── README_CN.md
+│   # Progress files created by AI during execution:
+│   # - tdd-{feature}.md
+│   # - fix-{bug-name}.md
+│   # - refactor-{target}.md
+├── reports/                        # Analysis & metrics
+│   ├── README.md
+│   └── README_CN.md
+│   # Subdirectories: weekly/, review/, metrics/
+└── decisions/                      # Architecture Decision Records (ADR)
+    ├── README.md
+    ├── template.md
+    └── README_CN.md
+```
+
+### Progress Tracking Files
+
+**File Naming Conventions** (`active/`):
+```
+tdd-{feature}.md      # TDD development (RED → GREEN → REFACTOR → DONE)
+fix-{bug-name}.md     # Bug fix (REPRODUCING → DIAGNOSING → FIXING → VERIFYING → DONE)
+refactor-{target}.md  # Refactoring tasks
+```
+
+**Status Tracking**:
+- **TDD**: `RED | GREEN | REFACTOR | DONE`
+- **Bug Fix**: `REPRODUCING | DIAGNOSING | FIXING | VERIFYING | DONE`
+
+### Maintenance
+
+- Use `/update-docs` command for automatic documentation updates
+- AI maintains progress files in `active/` directory
+- Follow [CLAUDE.md](../CLAUDE.md) specifications
+
+---
+
 ## 📁 Skills Directory Structure
 
 Based on `skills/skill-creator/` reference.
@@ -150,10 +205,18 @@ skills/
 ## Development Workflow
 
 1. `/plan` - Create implementation approach
-2. `/tdd` - Implement with tests
-3. `/code-review` - Review before commit
-4. Agents auto-activate based on task
-5. `/learn` - Extract patterns for future
+2. AI creates progress file in `docs/active/{task-name}.md`
+3. `/tdd` - Implement with tests (updates progress file)
+4. `/code-review` - Review before commit
+5. Agents auto-activate based on task
+6. `/update-docs` - Update documentation after completion
+7. `/learn` - Extract patterns for future
+
+**Progress Tracking**:
+- AI maintains `docs/active/{task-name}.md` during execution
+- Updates status: RED → GREEN → REFACTOR → DONE (TDD)
+- Documents decisions, blockers, and solutions
+- Moves completed tasks to `docs/reports/` on completion
 
 ---
 
