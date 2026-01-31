@@ -16,7 +16,7 @@ from typing import Literal, Any
 MIN_ALTERNATIVES = 2
 """最少备选方案数量"""
 
-MIN_CRITERIA = 2
+MIN_CRITERIA = 1
 """最少评价准则数量"""
 
 MIN_SCORE = 0.0
@@ -287,8 +287,8 @@ class DecisionProblem:
         """验证数据一致性"""
         if len(self.alternatives) < 2:
             raise ValueError("DecisionProblem: 至少需要 2 个备选方案")
-        if len(self.criteria) < 2:
-            raise ValueError("DecisionProblem: 至少需要 2 个评价准则")
+        if len(self.criteria) < 1:
+            raise ValueError("DecisionProblem: 至少需要 1 个评价准则")
 
         # 验证评分范围
         min_score, max_score = self.score_range
@@ -360,11 +360,13 @@ class ResultMetadata:
         algorithm_version: 算法版本
         calculated_at: 计算时间（ISO 8601 格式）
         problem_size: 问题规模 (备选方案数, 准则数)
+        metrics: 算法特定指标（可选）
     """
     algorithm_name: str
     algorithm_version: str = "1.0.0"
     calculated_at: str = field(default_factory=lambda: datetime.now().isoformat())
     problem_size: tuple[int, int] = (0, 0)
+    metrics: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """验证参数有效性"""
