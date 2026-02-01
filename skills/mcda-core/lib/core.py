@@ -6,7 +6,7 @@ MCDA Core - 核心编排器模块
 
 from pathlib import Path
 from datetime import datetime
-from typing import Any
+from typing import Any, Union
 
 from mcda_core.models import (
     DecisionProblem,
@@ -24,6 +24,7 @@ from mcda_core.exceptions import (
     YAMLParseError,
     ValidationError as MCDAValidationError,
 )
+from mcda_core.loaders import JSONLoader, YAMLLoader, LoaderFactory
 
 
 # =============================================================================
@@ -85,6 +86,95 @@ class MCDAOrchestrator:
         algorithm_config = self._parse_algorithm_config(data)
 
         # 6. 创建决策问题
+        try:
+            problem = DecisionProblem(
+                alternatives=tuple(alternatives),
+                criteria=tuple(criteria),
+                scores=scores,
+                algorithm=algorithm_config
+            )
+        except Exception as e:
+            raise MCDAValidationError(
+                f"创建决策问题失败: {str(e)}",
+                details={"error": str(e)}
+            ) from e
+
+        return problem
+
+    def load_from_json(
+        self,
+        file_path: Union[str, Path],
+        auto_normalize_weights: bool = True
+    ) -> DecisionProblem:
+        """从 JSON 文件加载决策问题
+
+        Args:
+            file_path: JSON 配置文件路径
+            auto_normalize_weights: 是否自动归一化权重（默认 True）
+
+        Returns:
+            决策问题对象
+
+        Raises:
+            ConfigLoadError: JSON 文件格式错误
+            MCDAValidationError: 数据验证失败
+        """
+        # 使用 JSONLoader 加载
+        loader = JSONLoader()
+        data = loader.load(file_path)
+
+        # 复用现有的解析逻辑
+        alternatives = self._parse_alternatives(data)
+        criteria = self._parse_criteria(data, auto_normalize_weights)
+        scores = self._parse_scores(data, alternatives, criteria)
+        algorithm_config = self._parse_algorithm_config(data)
+
+        # 创建决策问题
+        try:
+            problem = DecisionProblem(
+                alternatives=tuple(alternatives),
+                criteria=tuple(criteria),
+                scores=scores,
+                algorithm=algorithm_config
+            )
+        except Exception as e:
+            raise MCDAValidationError(
+                f"创建决策问题失败: {str(e)}",
+                details={"error": str(e)}
+            ) from e
+
+        return problem
+
+    def load_from_file(
+        self,
+        file_path: Union[str, Path],
+        auto_normalize_weights: bool = True
+    ) -> DecisionProblem:
+        """自动检测格式并加载配置文件
+
+        Args:
+            file_path: 配置文件路径（支持 .json, .yaml, .yml）
+            auto_normalize_weights: 是否自动归一化权重（默认 True）
+
+        Returns:
+            决策问题对象
+
+        Raises:
+            ValueError: 不支持的文件格式
+            ConfigLoadError: 配置文件格式错误
+            MCDAValidationError: 数据验证失败
+        """
+        # 使用 LoaderFactory 自动检测格式
+        loader = LoaderFactory.get_loader(file_path)
+        data = loader.load(file_path)
+
+        # 复用现有的解析逻辑
+        alternatives = self._parse_alternatives(data)
+        criteria = self._parse_criteria(data, auto_normalize_weights)
+        scores = self._parse_scores(data, alternatives, criteria)
+        algorithm_config = self._parse_algorithm_config(data)
+
+        # 创建决策问题
         try:
             problem = DecisionProblem(
                 alternatives=tuple(alternatives),
