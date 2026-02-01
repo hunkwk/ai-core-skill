@@ -9,9 +9,17 @@ from .logarithmic_normalizer import (
     LogarithmicNormalizerError,
     logarithmic_normalize
 )
+from .sigmoid_normalizer import (
+    SigmoidNormalizer,
+    SigmoidNormalizerError,
+    sigmoid_normalize
+)
 
 __all__ = [
     "LogarithmicNormalizer",
     "LogarithmicNormalizerError",
     "logarithmic_normalize",
+    "SigmoidNormalizer",
+    "SigmoidNormalizerError",
+    "sigmoid_normalize",
 ]
