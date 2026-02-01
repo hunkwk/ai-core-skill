@@ -1,0 +1,63 @@
+# 供应商选择决策问题
+# 这是一个经典的 MCDA 问题：从多个维度评估和选择最佳供应商
+
+name: 供应商选择决策
+
+# 备选方案
+alternatives:
+  - 供应商A
+  - 供应商B
+  - 供应商C
+  - 供应商D
+
+# 评估准则
+criteria:
+  - name: 成本
+    weight: 0.35
+    direction: lower_better
+    description: 采购成本（越低越好）
+
+  - name: 质量
+    weight: 0.30
+    direction: higher_better
+    description: 产品质量评分（越高越好）
+
+  - name: 交付期
+    weight: 0.20
+    direction: lower_better
+    description: 交付时间（天数，越短越好）
+
+  - name: 服务
+    weight: 0.15
+    direction: higher_better
+    description: 售后服务评分（越高越好）
+
+# 评分矩阵（0-100 分）
+scores:
+  供应商A:
+    成本: 50
+    质量: 85
+    交付期: 30
+    服务: 75
+
+  供应商B:
+    成本: 65
+    质量: 70
+    交付期: 25
+    服务: 80
+
+  供应商C:
+    成本: 45
+    质量: 90
+    交付期: 40
+    服务: 65
+
+  供应商D:
+    成本: 60
+    质量: 75
+    交付期: 20
+    服务: 70
+
+# 算法配置
+algorithm:
+  name: topsis

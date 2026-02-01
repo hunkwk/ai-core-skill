@@ -1,0 +1,45 @@
+# 无效权重配置
+# 用于测试权重归一化和错误处理
+
+name: 权重测试问题
+
+# 备选方案
+alternatives:
+  - 方案A
+  - 方案B
+  - 方案C
+
+# 评估准则（权重和不为 1）
+criteria:
+  - name: 成本
+    weight: 0.5
+    direction: lower_better
+
+  - name: 质量
+    weight: 0.4
+    direction: higher_better
+
+  - name: 时间
+    weight: 0.3
+    direction: lower_better
+
+# 评分矩阵（0-100 分）
+scores:
+  方案A:
+    成本: 60
+    质量: 75
+    时间: 50
+
+  方案B:
+    成本: 80
+    质量: 65
+    时间: 70
+
+  方案C:
+    成本: 70
+    质量: 85
+    时间: 60
+
+# 算法配置
+algorithm:
+  name: wsm
