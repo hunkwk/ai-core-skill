@@ -62,6 +62,11 @@ class YAMLParseError(DataSourceError):
     pass
 
 
+class ConfigLoadError(DataSourceError):
+    """配置加载异常（JSON、YAML 等格式）"""
+    pass
+
+
 class CSVParseError(DataSourceError):
     """CSV 解析异常"""
     pass
@@ -103,6 +108,7 @@ __all__ = [
     "NormalizationError",
     "DataSourceError",
     "YAMLParseError",
+    "ConfigLoadError",
     "CSVParseError",
     "ExcelParseError",
     "ScoringRuleError",
