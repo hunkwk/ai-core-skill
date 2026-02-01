@@ -2,19 +2,20 @@
 
 **Multi-Criteria Decision Analysis Core Framework**
 
-通用多准则决策分析核心框架，支持可插拔算法模型（WSM、WPM、TOPSIS、VIKOR）。
+通用多准则决策分析核心框架，支持 7 种可插拔算法模型（WSM、WPM、TOPSIS、VIKOR、AHP、熵权法、PROMETHEE-II）。
 
-[![Python Version](https://img.shields.io/badge/python-3.8%2B+-blue.svg)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B+-blue.svg)]
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)]
-[![Tests](https://img.shields.io/badge/tests-313%20success.svg)
-[![Coverage](https://img.shields.io/badge/coverage-92%25success.svg)
+[![Tests](https://img.shields.io/badge/tests-83%20passed-green.svg)]
+[![Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen.svg)]
 
 ---
 
 ## 🎯 功能特性
 
 ### 核心功能
-- ✅ **4 种 MCDA 算法**: WSM、WPM、TOPSIS、VIKOR
+- ✅ **7 种 MCDA 算法**: WSM、WPM、TOPSIS、VIKOR、AHP、熵权法、PROMETHEE-II
+- ✅ **权重计算服务**: AHP 主观赋权、熵权法客观赋权
 - ✅ **可插拔架构**: 算法注册机制，易于扩展
 - ✅ **数据验证**: 完整的输入验证和错误处理
 - ✅ **多种标准化**: MinMax、Vector 标准化
@@ -24,12 +25,22 @@
 
 ### 算法支持
 
+#### 排序算法
+
 | 算法 | 全称 | 适用场景 |
 |------|------|----------|
 | **WSM** | Weighted Sum Model | 简单加权求和 |
 | **WPM** | Weighted Product Model | 加权乘积 |
 | **TOPSIS** | 逼近理想解排序法 | 多准则权衡 |
-| **VIKOR** | VlseKriterijumska Optimizacija I Kompromisno Resenje | 折衷决策 |
+| **VIKOR** | 折衷排序法 | 折衷决策 |
+| **PROMETHEE-II** | 偏好排序法 | 基于偏好函数的排序 |
+
+#### 权重计算服务
+
+| 服务 | 全称 | 类型 |
+|------|------|------|
+| **AHP** | Analytic Hierarchy Process | 主观赋权 |
+| **熵权法** | Entropy Weight Method | 客观赋权 |
 
 ---
 

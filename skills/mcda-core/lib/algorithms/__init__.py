@@ -16,6 +16,10 @@ from mcda_core.algorithms.wsm import WSMAlgorithm
 from mcda_core.algorithms.wpm import WPMAlgorithm
 from mcda_core.algorithms.topsis import TOPSISAlgorithm
 from mcda_core.algorithms.vikor import VIKORAlgorithm
+from mcda_core.algorithms.promethee2_service import (
+    PROMETHEEService,
+    PROMETHEEValidationError
+)
 
 __all__ = [
     # 基类和注册
@@ -28,4 +32,7 @@ __all__ = [
     "WPMAlgorithm",
     "TOPSISAlgorithm",
     "VIKORAlgorithm",
+    # 服务
+    "PROMETHEEService",
+    "PROMETHEEValidationError",
 ]
