@@ -20,6 +20,7 @@ from mcda_core.algorithms.promethee2_service import (
     PROMETHEEService,
     PROMETHEEValidationError
 )
+from mcda_core.algorithms.todim import todim, TODIMError
 
 __all__ = [
     # 基类和注册
@@ -32,6 +33,9 @@ __all__ = [
     "WPMAlgorithm",
     "TOPSISAlgorithm",
     "VIKORAlgorithm",
+    # TODIM
+    "todim",
+    "TODIMError",
     # 服务
     "PROMETHEEService",
     "PROMETHEEValidationError",
