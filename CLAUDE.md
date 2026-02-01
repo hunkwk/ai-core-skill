@@ -31,6 +31,76 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ---
 
+## 📁 Project Root Directory Structure
+
+**根目录文件组织原则**: 保持简洁，只保留核心配置和文档
+
+### Standard Layout
+
+```
+ai_core_skill/                       # 项目根目录
+├── AGENTS.md                       # ✅ AI Agent 工作指南（项目级）
+├── CHANGELOG.md                    # ✅ 变更日志
+├── CLAUDE.md                       # ✅ 本文件（AI 指导）
+├── LICENSE                         # ✅ 许可证
+├── README.md / README_CN.md        # ✅ 项目说明（如有）
+├── package.json                   # ✅ Node.js 配置
+├── pytest.ini                      # ✅ pytest 配置
+├── .gitignore / .coverage          # Git & 测试覆盖率
+│
+├── docs/                           # 📚 文档目录
+│   ├── archive/                   # 归档旧文档（CHECKPOINT-PHASE3.md 等）
+│   ├── checkpoints/               # ✅ 项目里程碑 checkpoints
+│   ├── active/                    # ✅ 执行进度追踪
+│   ├── plans/                     # 规划文档
+│   └── decisions/                 # ADR 架构决策记录
+│
+├── skills/                        # 💡 技能模块目录
+│   ├── mcda-core/                # MCDA Core 技能
+│   │   ├── lib/                   # 核心代码
+│   │   │   ├── algorithms/       # 排序算法
+│   │   │   ├── services/         # 权重计算服务
+│   │   │   └── visualization/   # 可视化
+│   │   ├── tests/                # 测试文件
+│   │   ├── reports/              # 测试报告
+│   │   ├── README.md / README_CN.md
+│   │   ├── SKILL.md / SKILL_CN.md
+│   │   └── install_mcda.py       # 安装脚本
+│   └── [other skills...]
+│
+└── tests/                         # 🧪 测试目录（如有全局测试）
+    └── [test files...]
+```
+
+### File Placement Rules
+
+**根目录应只包含**:
+- ✅ **核心配置文件**: `.gitignore`, `package.json`, `pytest.ini`
+- ✅ **项目级文档**: `AGENTS.md`, `CHANGELOG.md`, `CLAUDE.md`, `LICENSE`
+- ✅ **项目说明**: `README.md` (如有)
+- ❌ **不应该有**: 临时文件、旧文档、测试脚本、实现代码
+
+**文档归档到 `docs/archive/`**:
+- ✅ 旧阶段的 checkpoint 文件
+- ✅ 旧阶段的总结文档
+- ✅ 已完成阶段的临时文档
+
+**测试脚本放到 `tests/{feature}/`**:
+- ✅ `run_*.py` 测试运行脚本
+- ✅ `test_*.py` 测试文件
+- ✅ `fix_*.py` 修复脚本
+
+**安装脚本放到 `skills/{skill}/`**:
+- ✅ `install_*.py` 安装脚本
+
+**IMPORTANT**:
+- 根目录保持**简洁清晰** - 只包含配置和文档
+- 所有实现代码在 `skills/` 下
+- 所有测试在 `tests/` 下
+- 旧文档归档到 `docs/archive/`
+
+---
+
 ## 📚 Documentation Structure
 
 Centralized documentation in `docs/` directory for AI-human collaboration.
