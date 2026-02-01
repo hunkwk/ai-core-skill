@@ -459,5 +459,6 @@ class TestTODIMProperties:
 
         # 验证元数据
         assert hasattr(result, 'metadata')
-        assert 'theta' in result.metadata
-        assert result.metadata['theta'] == theta
+        assert result.metadata.algorithm_name == "todim"
+        assert "theta" in result.metadata.metrics
+        assert result.metadata.metrics["theta"] == theta

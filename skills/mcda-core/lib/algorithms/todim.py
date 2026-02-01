@@ -7,7 +7,7 @@ TODIM 算法实现
 from typing import Union
 import numpy as np
 from numpy.typing import NDArray
-from ..models import DecisionProblem, Criterion
+from ..models import DecisionProblem, Criterion, RankingItem, DecisionResult, ResultMetadata
 
 
 class TODIMError(Exception):
@@ -18,7 +18,7 @@ class TODIMError(Exception):
 def todim(
     problem: DecisionProblem,
     theta: float = 1.0
-):
+) -> DecisionResult:
     """TODIM 算法实现
 
     数学模型:
@@ -98,27 +98,30 @@ def todim(
         better_count = np.sum(global_dominance > global_dominance[idx])
         rank = better_count + 1
 
-        rankings.append({
-            'alternative': alternatives[idx],
-            'rank': rank,
-            'score': float(global_dominance[idx])
-        })
+        rankings.append(RankingItem(
+            rank=rank,
+            alternative=alternatives[idx],
+            score=float(global_dominance[idx])
+        ))
 
-    # 构建返回结果
-    class DecisionResult:
-        def __init__(self, algorithm_name, rankings, metadata=None):
-            self.algorithm_name = algorithm_name
-            self.rankings = rankings
-            self.metadata = metadata or {}
-
-    return DecisionResult(
+    # 构建元数据
+    metadata = ResultMetadata(
         algorithm_name="todim",
-        rankings=rankings,
-        metadata={
+        problem_size=(n_alt, n_crit),
+        metrics={
             "theta": theta,
             "global_dominance": global_dominance.tolist(),
             "phi_matrix_shape": phi.shape,
         }
+    )
+
+    # 构建原始得分
+    raw_scores = {alt: float(global_dominance[i]) for i, alt in enumerate(alternatives)}
+
+    return DecisionResult(
+        rankings=rankings,
+        raw_scores=raw_scores,
+        metadata=metadata
     )
 
 
