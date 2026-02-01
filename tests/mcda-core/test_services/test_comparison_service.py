@@ -272,24 +272,9 @@ class TestFullWorkflow:
 class TestEdgeCases:
     """边界条件测试"""
 
-    def test_single_alternative(self):
-        """测试：单个方案"""
-        decision_matrix = np.array([
-            [10, 20, 30],
-        ])
-
-        weights = np.array([0.5, 0.3, 0.2])
-
-        service = ComparisonService()
-
-        result = service.compare_algorithms(
-            decision_matrix,
-            weights,
-            algorithms=["wsm", "topsis"]
-        )
-
-        # 单个方案，所有算法应该给出相同排名
-        assert len(result["rankings"][0]["ranking"]) == 1
+    # 注意：单方案测试已删除
+    # 原因：DecisionProblem 要求至少 2 个备选方案（MCDA 基本约束）
+    # 单方案的比较没有实际意义
 
     def test_two_alternatives_minimum(self):
         """测试：最少2个方案"""

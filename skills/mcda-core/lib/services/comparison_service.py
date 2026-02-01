@@ -7,7 +7,7 @@
 import numpy as np
 from typing import Literal
 
-from mcda_core.algorithms import get_algorithm
+from mcda_core.algorithms import get_algorithm, list_algorithms
 
 
 class ComparisonValidationError(Exception):
@@ -51,10 +51,13 @@ class ComparisonService:
     """
 
     def __init__(self):
-        """初始化对比服务"""
-        self.supported_algorithms = [
-            "wsm", "wpm", "topsis", "vikor"
-        ]
+        """初始化对比服务
+
+        自动从算法注册表获取所有已注册的算法。
+        无需手动维护算法列表，支持动态扩展。
+        """
+        # 从算法注册表动态获取所有已注册算法
+        self.supported_algorithms = list_algorithms()
 
     # ========================================================================
     # 算法对比
@@ -99,30 +102,62 @@ class ComparisonService:
 
         # 运行所有算法
         rankings = {}
+
+        # 转换决策矩阵为 scores 字典格式
+        # decision_matrix: np.ndarray (n_alternatives x n_criteria)
+        # scores: {alternative: {criterion: score}}
+        scores = {}
+        for i, alt_name in enumerate(alternatives):
+            scores[alt_name] = {}
+            for j in range(len(weights)):
+                criterion_name = f"C{j}"
+                scores[alt_name][criterion_name] = float(decision_matrix[i, j])
+
+        # 创建准则列表
+        from mcda_core.models import Criterion, AlgorithmConfig
+        criteria = []
+        for j, direction in enumerate(criteria_directions):
+            criterion_name = f"C{j}"
+            criteria.append(
+                Criterion(
+                    name=criterion_name,
+                    weight=float(weights[j]),
+                    direction=direction
+                )
+            )
+
         for algo_name in algorithms:
             algo = get_algorithm(algo_name)
 
-            # 创建 DecisionProblem
-            from mcda_core.core import DecisionProblem
+            # 创建 DecisionProblem（使用正确的 API）
+            # 注意：禁用评分范围验证，因为决策矩阵可能包含任意数值
+            from mcda_core.models import DecisionProblem
             problem = DecisionProblem(
-                decision_matrix=decision_matrix,
-                weights=weights,
-                criteria_directions=criteria_directions,
-                alternatives=alternatives
+                alternatives=tuple(alternatives),
+                criteria=tuple(criteria),
+                scores=scores,
+                algorithm=AlgorithmConfig(name=algo_name),
+                score_range=(-float('inf'), float('inf'))  # 允许任意范围
             )
 
             result = algo.calculate(problem)
 
-            # 提取排名（方案索引）
-            ranking_indices = [r["alternative"] for r in result["rankings"]]
-
-            # 转换为 0-based 排名
+            # 提取排名（DecisionResult 是 dataclass，访问 rankings 属性）
             ranking = [0] * n_alternatives
-            for rank, idx in enumerate(ranking_indices):
-                if isinstance(idx, str):
-                    # 从字符串 "A0", "A1" 中提取数字
-                    idx = int(idx.replace("A", ""))
-                ranking[idx] = rank
+            for rank_item in result.rankings:
+                # rank_item.alternative 是方案名称（如 "A0"）
+                # rank_item.rank 是排名（从 1 开始）
+                alt_name = rank_item.alternative
+                rank_value = rank_item.rank
+
+                # 从方案名称中提取索引
+                if isinstance(alt_name, str) and alt_name.startswith("A"):
+                    idx = int(alt_name.replace("A", ""))
+                else:
+                    # 如果不是标准格式，从 alternatives 列表中查找
+                    idx = alternatives.index(alt_name)
+
+                ranking[idx] = rank_value - 1  # 转换为 0-based
 
             rankings[algo_name] = ranking
 
