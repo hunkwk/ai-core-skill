@@ -1,0 +1,1 @@
+/usr/bin/bash: /c/Users/hunkwk/AppData/Local/Microsoft/WindowsApps/python: Permission denied

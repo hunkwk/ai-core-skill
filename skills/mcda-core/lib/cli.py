@@ -11,6 +11,7 @@ from typing import Any
 
 from mcda_core.core import MCDAOrchestrator
 from mcda_core.exceptions import MCDAError, YAMLParseError
+from mcda_core.converters import ConfigConverter
 
 
 # =============================================================================
@@ -23,6 +24,7 @@ class MCDACommandLineInterface:
     支持的命令:
     - analyze: 分析决策问题
     - validate: 验证配置文件
+    - convert: 转换配置格式（YAML ↔ JSON）
     - version: 显示版本信息
     - help: 显示帮助信息
     """
@@ -30,6 +32,7 @@ class MCDACommandLineInterface:
     def __init__(self):
         """初始化 CLI"""
         self.orchestrator = MCDAOrchestrator()
+        self.converter = ConfigConverter()
         self.parser = self._create_parser()
 
     def _create_parser(self) -> argparse.ArgumentParser:
@@ -44,6 +47,8 @@ class MCDACommandLineInterface:
   mcda analyze config.yaml -o report.md
   mcda analyze config.yaml --algorithm topsis
   mcda validate config.yaml
+  mcda convert config.yaml config.json
+  mcda convert config.yaml config.json --format json
   mcda --version
             """
         )
@@ -66,7 +71,7 @@ class MCDACommandLineInterface:
         analyze_parser.add_argument(
             "config",
             type=Path,
-            help="YAML 配置文件路径"
+            help="YAML/JSON 配置文件路径"
         )
         analyze_parser.add_argument(
             "-o", "--output",
@@ -97,7 +102,28 @@ class MCDACommandLineInterface:
         validate_parser.add_argument(
             "config",
             type=Path,
-            help="YAML 配置文件路径"
+            help="YAML/JSON 配置文件路径"
+        )
+
+        # convert 命令
+        convert_parser = subparsers.add_parser(
+            "convert",
+            help="转换配置格式（YAML ↔ JSON）"
+        )
+        convert_parser.add_argument(
+            "input",
+            type=Path,
+            help="输入配置文件路径"
+        )
+        convert_parser.add_argument(
+            "output",
+            type=Path,
+            help="输出配置文件路径"
+        )
+        convert_parser.add_argument(
+            "-f", "--format",
+            choices=["json", "yaml"],
+            help="输出格式（默认: 根据输出文件扩展名自动检测）"
         )
 
         return parser
@@ -124,6 +150,8 @@ class MCDACommandLineInterface:
                 self._cmd_analyze(parsed_args)
             elif parsed_args.command == "validate":
                 self._cmd_validate(parsed_args)
+            elif parsed_args.command == "convert":
+                self._cmd_convert(parsed_args)
             else:
                 self.parser.print_help()
         except MCDAError as e:
@@ -148,7 +176,7 @@ class MCDACommandLineInterface:
         Args:
             args: 解析后的命令行参数
         """
-        # 加载并分析问题
+        # 加载并分析问题（自动检测格式）
         result = self.orchestrator.run_workflow(
             file_path=args.config,
             output_path=args.output,
@@ -159,7 +187,7 @@ class MCDACommandLineInterface:
 
         # 如果没有指定输出文件，打印到 stdout
         if args.output is None:
-            problem = self.orchestrator.load_from_yaml(args.config)
+            problem = self.orchestrator.load_from_file(args.config)
 
             if args.format == "markdown":
                 report = self.orchestrator.generate_report(
@@ -180,8 +208,8 @@ class MCDACommandLineInterface:
         Args:
             args: 解析后的命令行参数
         """
-        # 加载问题
-        problem = self.orchestrator.load_from_yaml(args.config)
+        # 自动检测格式并加载问题
+        problem = self.orchestrator.load_from_file(args.config)
 
         # 验证问题
         validation_result = self.orchestrator.validate(problem)
@@ -207,6 +235,21 @@ class MCDACommandLineInterface:
                     print(f"  - {warning}", file=sys.stderr)
 
             sys.exit(1)
+
+    def _cmd_convert(self, args: argparse.Namespace) -> None:
+        """处理 convert 命令
+
+        Args:
+            args: 解析后的命令行参数
+        """
+        # 执行转换
+        self.converter.convert(
+            input_file=args.input,
+            output_file=args.output,
+            output_format=args.format
+        )
+
+        print(f"✓ 转换完成: {args.input} → {args.output}", file=sys.stderr)
 
 
 # =============================================================================

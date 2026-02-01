@@ -12,16 +12,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Optional, Union
 
-# 尝试相对导入
-try:
-    from ..exceptions import ConfigLoadError
-except ImportError:
-    # 如果相对导入失败，使用绝对导入并添加路径
-    import sys
-    lib_path = Path(__file__).parent.parent
-    if str(lib_path) not in sys.path:
-        sys.path.insert(0, str(lib_path))
-    from exceptions import ConfigLoadError
+from ..exceptions import ConfigLoadError
 
 
 # =============================================================================

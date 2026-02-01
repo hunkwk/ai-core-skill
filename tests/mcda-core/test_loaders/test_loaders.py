@@ -31,8 +31,8 @@ class TestJSONLoader:
             "description": "Test description",
             "alternatives": ["A", "B", "C"],
             "criteria": [
-                {"name": "Cost", "weight": 0.5, "direction": "minimize"},
-                {"name": "Quality", "weight": 0.5, "direction": "maximize"}
+                {"name": "Cost", "weight": 0.5, "direction": "lower_better"},
+                {"name": "Quality", "weight": 0.5, "direction": "higher_better"}
             ],
             "scores": {
                 "A": {"Cost": 100, "Quality": 80},
@@ -91,10 +91,10 @@ alternatives:
 criteria:
   - name: Cost
     weight: 0.5
-    direction: minimize
+    direction: lower_better
   - name: Quality
     weight: 0.5
-    direction: maximize
+    direction: higher_better
 scores:
   A:
     Cost: 100
@@ -129,10 +129,10 @@ scores:
 
             loader = YAMLLoader()
 
-            # YAML 通常不会抛出错误，但格式错误会导致解析问题
-            # 这里我们测试它能处理各种 YAML 格式
-            data = loader.load(f.name)
-            assert data is not None
+            # 无效的 YAML 应该抛出 ConfigLoadError
+            from mcda_core.exceptions import ConfigLoadError
+            with pytest.raises(ConfigLoadError):
+                loader.load(f.name)
 
         Path(f.name).unlink()
 
@@ -163,7 +163,7 @@ class TestLoaderFactory:
         """测试不支持的文件格式"""
         factory = LoaderFactory()
 
-        with pytest.raises(ValueError, match="Unsupported file format"):
+        with pytest.raises(ValueError, match="不支持的文件格式"):
             factory.get_loader("config.xml")
 
     def test_register_custom_loader(self):
@@ -191,8 +191,8 @@ class TestYAMLJSONConsistency:
             "name": "Test Problem",
             "alternatives": ["A", "B"],
             "criteria": [
-                {"name": "Cost", "weight": 0.6, "direction": "minimize"},
-                {"name": "Quality", "weight": 0.4, "direction": "maximize"}
+                {"name": "Cost", "weight": 0.6, "direction": "lower_better"},
+                {"name": "Quality", "weight": 0.4, "direction": "higher_better"}
             ],
             "scores": {
                 "A": {"Cost": 100, "Quality": 80},
