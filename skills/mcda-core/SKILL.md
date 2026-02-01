@@ -1,6 +1,6 @@
 ---
 name: mcda-core
-description: Multi-Criteria Decision Analysis core framework supporting multiple algorithmic models (WSM, AHP, TOPSIS). Use when user needs to make structured decisions between alternatives with conflicting criteria (e.g., vendor selection, product evaluation, hiring decisions, investment choices). Handles decision matrix definition, validation, calculation, and sensitivity analysis. Current algorithms: WSM (Weighted Sum Model).
+description: Multi-Criteria Decision Analysis core framework supporting multiple algorithmic models (WSM, WPM, TOPSIS, VIKOR). Use when user needs to make structured decisions between alternatives with conflicting criteria (e.g., vendor selection, product evaluation, hiring decisions, investment choices). Handles decision matrix definition, validation, calculation, and sensitivity analysis.
 license: Apache-2.0
 ---
 
@@ -11,9 +11,9 @@ license: Apache-2.0
 ## Quick Start
 
 1. Define decision problem (alternatives, criteria, weights, scores)
-2. Validate input: `python lib/core.py validate decision.yaml`
-3. Run calculation: `python lib/core.py calculate decision.yaml`
-4. Generate report: `python lib/core.py report decision.yaml --output report.md`
+2. Validate input: `mcda validate config.yaml`
+3. Run calculation: `mcda analyze config.yaml`
+4. Generate report: `mcda analyze config.yaml -o report.md`
 
 ## Workflow
 
@@ -22,63 +22,101 @@ license: Apache-2.0
 Ask user:
 - What are you choosing between? (alternatives)
 - What criteria matter? (criteria with weights)
-- How to score each alternative? (1-5 scale)
+- How to score each alternative? (scores 0-100)
 
 **Step 2: Create YAML Config**
 
 ```yaml
-problem: "选择最佳供应商"
+name: 供应商选择
 
 alternatives:
-  - AWS
-  - Azure
-  - GCP
+  - 供应商A
+  - 供应商B
+  - 供应商C
 
 criteria:
   - name: 成本
     weight: 0.35
     direction: lower_better
-  - name: 功能完整性
+  - name: 质量
     weight: 0.30
+    direction: higher_better
+  - name: 交付期
+    weight: 0.20
+    direction: lower_better
+  - name: 服务
+    weight: 0.15
     direction: higher_better
 
 scores:
-  AWS:
-    成本: 3
-    功能完整性: 5
-  Azure:
-    成本: 4
-    功能完整性: 4
+  供应商A:
+    成本: 50
+    质量: 80
+    交付期: 30
+    服务: 70
+  供应商B:
+    成本: 70
+    质量: 60
+    交付期: 20
+    服务: 80
+  供应商C:
+    成本: 60
+    质量: 90
+    交付期: 40
+    服务: 60
 
 algorithm:
-  name: wsm
+  name: topsis
 ```
 
 **Step 3: Validate & Calculate**
 
 ```bash
-python lib/core.py validate decision.yaml
-python lib/core.py calculate decision.yaml
+mcda validate config.yaml
+mcda analyze config.yaml
 ```
 
 **Step 4: Analyze Results**
 
 - Review ranking and scores
-- Check sensitivity analysis
-- Export report (Markdown)
+- Check sensitivity analysis (optional: `mcda analyze config.yaml --sensitivity`)
+- Export report (Markdown/JSON)
 
 ## Algorithms
 
-**Current**: WSM (Weighted Sum Model)
-- Formula: `Score = Σ(weight_i × score_i)`
-- Supports: higher_better / lower_better
-- Use case: Simple additive weighting
+**Available Algorithms**:
 
-**Planned**: AHP, TOPSIS (see [algorithms.md](references/algorithms.md))
+1. **WSM** (Weighted Sum Model)
+   - Formula: `Score = Σ(weight_i × score_i)`
+   - Use case: Simple additive weighting
+   - Pros: Simple, intuitive, easy to understand
+
+2. **WPM** (Weighted Product Model)
+   - Formula: `Score = ∏(score_i ^ weight_i)`
+   - Use case: Multiplicative decision making
+   - Pros: Penalizes low scores more heavily
+
+3. **TOPSIS** (Technique for Order Preference by Similarity to Ideal Solution)
+   - Formula: Based on distance to positive/negative ideal solutions
+   - Use case: Multi-criteria ranking with conflicting criteria
+   - Pros: Handles trade-offs well, widely used
+
+4. **VIKOR** (VIseKriterijumska Optimizacija I Kompromisno Resenje)
+   - Formula: Based on utility measure and regret measure
+   - Parameter: v (0 to 1, default 0.5)
+   - Use case: Compromise decision making
+   - Pros: Balances group utility and individual regret
 
 ## Advanced
 
-For algorithm details, see [algorithms.md](references/algorithms.md)
-For YAML schema, see [yaml-schema.md](references/yaml-schema.md)
-For examples, see [examples.md](references/examples.md)
-For sensitivity analysis, see [sensitivity.md](references/sensitivity.md)
+**CLI Commands**:
+```bash
+mcda analyze <config> [-o OUTPUT] [-a ALGORITHM] [-f FORMAT] [-s]
+mcda validate <config>
+mcda --help
+mcda --version
+```
+
+**Report Formats**: markdown, json
+
+**Algorithms**: wsm, wpm, topsis, vikor
