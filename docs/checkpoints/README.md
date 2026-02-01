@@ -1,139 +1,98 @@
-# Checkpoints Directory
+# Checkpoints 里程碑
 
-This directory contains project milestone checkpoints and progress records.
+**用途**: 记录项目关键里程碑和功能完成情况
 
-## 📋 Purpose
-
-Checkpoints provide a centralized location for recording major project milestones, including:
-- Phase completions
-- Feature implementations
-- Test coverage metrics
-- Lessons learned
-- Git commit history
-
-## 📁 File Structure
+## 📋 目录结构
 
 ```
 checkpoints/
-├── README.md                   # This file
-├── checkpoint-complete.md      # ✅ Unified complete project checkpoint (REQUIRED)
-├── checkpoint-phase5.md        # Phase 5 detailed checkpoint
-├── checkpoint-phase6.md        # Phase 6 detailed checkpoint
-└── checkpoint-{feature}.md     # Future feature checkpoints
+├── README.md                          # 本文件
+└── {feature}/                         # 功能模块
+    ├── checkpoint-complete.md         # 功能级别的完整里程碑（必需）
+    ├── checkpoint-v{version}.md       # 版本里程碑（可选）
+    └── checkpoint-v{version}-phase{N}.md  # 阶段里程碑（可选）
 ```
 
-## 🎯 Checkpoint Types
+## 🎯 Checkpoint 类型
 
-### 1. checkpoint-complete.md (REQUIRED)
-The single source of truth for the entire project progress.
-- Contains summaries of all phases
-- Complete metrics and statistics
-- Full feature checklist
-- Git commit history
-- Updated after each major milestone
+### 1. 功能完整 Checkpoint (必需)
+- **文件名**: `checkpoint-complete.md`
+- **用途**: 整个功能的**单一真相来源**
+- **内容**:
+  - 执行摘要
+  - 实现细节
+  - 代码统计
+  - 测试覆盖率
+  - Git 提交记录
+  - 经验教训
+  - 下一步计划
 
-### 2. checkpoint-phase{N}.md (OPTIONAL)
-Detailed records for individual phases.
-- In-depth implementation details
-- Bug fix records
-- Specific test results
-- Phase-specific lessons learned
+### 2. 版本 Checkpoint (可选)
+- **文件名**: `checkpoint-v{version}.md`
+- **用途**: 记录特定版本的完成情况
+- **示例**: `checkpoint-v0.3.md`
 
-### 3. checkpoint-{feature}.md (OPTIONAL)
-Feature-specific checkpoints for major features.
-- Feature design decisions
-- Implementation details
-- Testing strategy
-- Performance metrics
+### 3. 阶段 Checkpoint (可选)
+- **文件名**: `checkpoint-v{version}-phase{N}.md`
+- **用途**: 记录大型版本的阶段性进展
+- **示例**: `checkpoint-v0.3-phase2.md`
 
-## 📝 Checkpoint Content Requirements
+## 🔄 Checkpoint 创建流程
 
-Every checkpoint should include:
+1. 完成重要里程碑（阶段/功能）
+2. 运行完整测试套件并记录指标
+3. 更新或创建 `checkpoint-complete.md`
+4. 可选：创建独立的版本/阶段 checkpoint
+5. 保存到 `checkpoints/{feature}/` 目录
+6. Git commit 并附带描述性消息
 
-1. **Executive Summary**
-   - Brief overview of achievements
-   - Key metrics (tests, coverage, code stats)
+## 📝 Checkpoint 内容要求
 
-2. **Implementation Details**
-   - Core deliverables
-   - Key features implemented
-   - Technical decisions
+每个 checkpoint 应包含：
 
-3. **Metrics**
-   - Code statistics (lines of code, files)
-   - Test results (number of tests, coverage)
-   - Development time (estimated vs actual)
+1. **执行摘要**
+   - 成就概览
+   - 关键指标（测试、覆盖率、代码统计）
 
-4. **Git Commits**
-   - Relevant commit hashes
-   - Commit messages
-   - Branch information
+2. **实现细节**
+   - 核心交付物
+   - 实现的关键功能
+   - 技术决策
 
-5. **Lessons Learned**
-   - What went well
-   - Improvements for next time
-   - Known limitations
+3. **指标统计**
+   - 代码统计（行数、文件数）
+   - 测试结果（数量、覆盖率）
+   - 开发时间（预计 vs 实际）
 
-6. **Next Steps**
-   - Future enhancements
-   - Follow-up work
-   - Open issues
+4. **Git 提交**
+   - 相关 commit hash
+   - 提交消息
+   - 分支信息
 
-## 🔄 Checkpoint Creation Workflow
+5. **经验教训**
+   - 进展顺利的部分
+   - 改进建议
+   - 已知限制
 
-1. **Complete Milestone**: Finish a major phase or feature
-2. **Run Tests**: Execute full test suite and record metrics
-3. **Create Checkpoint**:
-   - Update `checkpoint-complete.md` with summary
-   - Optionally create detailed `checkpoint-phase{N}.md`
-4. **Save to Directory**: Place in `docs/checkpoints/`
-5. **Git Commit**: Commit with descriptive message
-6. **Update Memory**: Save to knowledge graph using `/everything-claude-code:checkpoint`
+6. **下一步计划**
+   - 未来增强
+   - 后续工作
+   - 未解决的问题
 
-## 📊 Current Project Status
+## 📌 注意事项
 
-**Project**: MCDA Core - Multi-Criteria Decision Analysis Framework
-**Version**: MVP v0.2
-**Status**: ✅ COMPLETE
+- ✅ `checkpoint-complete.md` 始终作为功能的**单一真相来源**
+- ✅ 所有 checkpoints 必须在 `checkpoints/{feature}/` 中
+- ❌ checkpoints **绝不在** `active/` 目录
+- 🔗 使用 `/everything-claude-code:checkpoint` 命令提取和保存进度
 
-### Completed Phases
-- ✅ Phase 1: Data Models and Exception Layer
-- ✅ Phase 2: Normalization Service
-- ✅ Phase 3: Aggregation Algorithms
-- ✅ Phase 4: Validation, Reporter, and Sensitivity Analysis
-- ✅ Phase 5: CLI Interface and Orchestrator
-- ✅ Phase 6: Test Suite and E2E Tests
+## 🔗 相关文档
 
-### Key Metrics
-- **Total Tests**: 312 passed
-- **Code Coverage**: 92%
-- **Total Code**: ~8000 lines
-- **Development Time**: 2 days (1.8 person-days)
-- **Efficiency**: 722% above expectations
-
-## 📖 Reading Order
-
-For new contributors or reviewers, read checkpoints in this order:
-
-1. **Start Here**: `checkpoint-complete.md` - Full project overview
-2. **Latest Phase**: `checkpoint-phase6.md` - Most recent work
-3. **Earlier Phases**: `checkpoint-phase5.md`, etc. - Historical context
-
-## 🔗 Related Documentation
-
-- [Active Progress](../active/README.md) - Real-time progress tracking
-- [Implementation Plans](../plans/README.md) - Detailed plans
-- [Architecture Decisions](../decisions/README.md) - Design decisions
-
-## 📅 Maintenance
-
-Checkpoints are created and maintained by AI during development.
-- Use `/everything-claude-code:checkpoint` command to extract progress
-- Update after each major milestone
-- Keep `checkpoint-complete.md` current
-- Archive old phase checkpoints as needed
+- [文档架构原则](../documentation-architecture-v2.md)
+- [归档目录](../archive/)
+- [当前工作目录](../active/)
 
 ---
 
-**Last Updated**: 2026-02-01
-**Maintained By**: AI (Claude Sonnet 4.5) + Human Contributors
+**最后更新**: 2026-02-01
+**维护者**: AI (Claude Sonnet 4.5) + 人工贡献者

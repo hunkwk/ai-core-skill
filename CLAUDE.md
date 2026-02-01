@@ -110,48 +110,139 @@ Centralized documentation in `docs/` directory for AI-human collaboration.
 ```
 docs/
 ├── README.md / README_CN.md        # Documentation index
-├── requirements/                    # Requirements analysis
+│
+├── requirements/                    # **Requirements analysis** (by feature)
 │   ├── README.md
-│   └── README_CN.md
-├── plans/                          # Implementation plans (versioned)
-│   ├── README.md
+│   ├── README_CN.md
+│   └── {feature}/                  # Feature-specific requirements
+│       ├── requirements.md         # Feature requirements document
+│       └── README.md               # Feature requirements index
+│
+├── decisions/                       # **Architecture Decision Records (ADR)** (by feature)
+│   ├── README.md                   # ADR index
+│   ├── template.md                 # ADR template
+│   ├── README_CN.md
+│   └── {feature}/                  # Feature-specific ADRs
+│       ├── 001-design-decision.md
+│       ├── 002-api-design.md
+│       └── README.md
+│
+├── plans/                           # **Implementation plans** (by feature + version)
+│   ├── README.md                   # Plans index
 │   ├── roadmap.md                  # Version roadmap
-│   └── v0.1/
-│       └── summary.md
-├── active/                         # **Execution progress tracking**
+│   └── {feature}/
+│       ├── v0.1/
+│       │   ├── execution-plan.md   # Version-specific plan
+│       │   └── summary.md
+│       ├── v0.2/
+│       └── v0.3/
+│
+├── active/                          # **Execution progress tracking** (by feature + version)
 │   ├── README.md
-│   └── README_CN.md
-│   # Progress files created by AI during execution:
-│   # - tdd-{feature}.md
-│   # - fix-{bug-name}.md
-│   # - refactor-{target}.md
-├── checkpoints/                     # **Project milestone checkpoints**
+│   ├── README_CN.md
+│   └── {feature}/
+│       ├── v0.1/
+│       │   ├── tdd-feature-x.md    # TDD progress tracking
+│       │   ├── fix-bug-y.md        # Bug fix tracking
+│       │   └── refactor-target.md  # Refactoring tracking
+│       └── v0.2/
+│
+├── reports/                         # **Test reports & analysis** (by feature + version)
+│   ├── README.md                   # Reports index
+│   ├── README_CN.md
+│   └── {feature}/
+│       ├── v0.1/
+│       │   └── test-report-v0.1.0.md
+│       └── v0.2/
+│           └── test-report-v0.2.0.md
+│
+├── checkpoints/                     # **Project milestone checkpoints** (by feature)
 │   ├── README.md                   # Checkpoints index
-│   ├── checkpoint-complete.md      # Unified complete project checkpoint
-│   ├── checkpoint-phase{N}.md      # Individual phase checkpoints
-│   └── checkpoint-{feature}.md     # Feature-specific checkpoints
-├── reports/                        # Analysis & metrics
-│   ├── README.md
-│   └── README_CN.md
-│   # Subdirectories: weekly/, review/, metrics/
-└── decisions/                      # Architecture Decision Records (ADR)
-    ├── README.md
-    ├── template.md
-    └── README_CN.md
+│   └── {feature}/
+│       ├── checkpoint-complete.md  # Unified complete feature checkpoint (REQUIRED)
+│       ├── checkpoint-v0.3-phase2.md  # Version/phase checkpoint (OPTIONAL)
+│       └── checkpoint-v0.3.md      # Version checkpoint (OPTIONAL)
+│
+└── archive/                         # **Archived documents** (by feature)
+    └── {feature}/                  # Old documents moved here after completion
+        ├── old-phase-docs/
+        └── deprecated-plans/
 ```
 
-### Progress Tracking Files
+### Documentation Architecture Principles
 
-**File Naming Conventions** (`active/`):
+**核心原则**: 按文档特性选择分层策略
+
+#### 类型 A: Feature 子目录（不包含版本号）
+
+**适用场景**: 永久性、跨版本、积累型文档
+
+| 目录 | 用途 | 示例 |
+|------|------|------|
+| `requirements/{feature}/` | 功能需求分析 | `mcda-core/requirements.md` |
+| `decisions/{feature}/` | 架构决策记录（ADR） | `mcda-core/001-api-design.md` |
+| `checkpoints/{feature}/` | 项目里程碑 | `mcda-core/checkpoint-complete.md` |
+| `archive/{feature}/` | 归档旧文档 | `mcda-core/old-plans/` |
+
+**特点**:
+- ✅ 跨版本共享
+- ✅ 随时间积累
+- ✅ 不需要版本隔离
+
+#### 类型 B: Feature + Version 子目录（包含版本号）
+
+**适用场景**: 临时性、版本隔离、迭代型文档
+
+| 目录 | 用途 | 示例 |
+|------|------|------|
+| `plans/{feature}/v{version}/` | 版本执行计划 | `mcda-core/v0.4/execution-plan.md` |
+| `active/{feature}/v{version}/` | 版本开发进度 | `mcda-core/v0.4/tdd-todim.md` |
+| `reports/{feature}/v{version}/` | 版本测试报告 | `mcda-core/v0.4/test-report.md` |
+
+**特点**:
+- ✅ 版本隔离清晰
+- ✅ 完成后归档到 `archive/`
+- ✅ 便于回溯历史版本
+
+### File Naming Conventions
+
+#### Progress Files (`active/`)
 ```
-tdd-{feature}.md      # TDD development (RED → GREEN → REFACTOR → DONE)
-fix-{bug-name}.md     # Bug fix (REPRODUCING → DIAGNOSING → FIXING → VERIFYING → DONE)
-refactor-{target}.md  # Refactoring tasks
+tdd-{feature-name}.md           # TDD development (RED → GREEN → REFACTOR → DONE)
+fix-{bug-name}.md               # Bug fix (REPRODUCING → DIAGNOSING → FIXING → VERIFYING → DONE)
+refactor-{target}.md            # Refactoring tasks
 ```
 
-**Status Tracking**:
+#### Test Reports (`reports/`)
+```
+test-report-v{version}.md       # Version-specific test report
+test-report-{date}.md           # Date-specific test report
+```
+
+#### Checkpoints (`checkpoints/`)
+```
+checkpoint-complete.md          # Unified complete feature checkpoint (REQUIRED)
+checkpoint-v{version}.md        # Version checkpoint (OPTIONAL)
+checkpoint-v{version}-phase{N}.md  # Phase checkpoint (OPTIONAL)
+```
+
+#### ADR Files (`decisions/`)
+```
+{number}-{short-title}.md       # Architecture Decision Record
+# Example: 002-mcda-algorithms-architecture.md
+```
+
+### Status Tracking
+
+**Progress Status**:
 - **TDD**: `RED | GREEN | REFACTOR | DONE`
 - **Bug Fix**: `REPRODUCING | DIAGNOSING | FIXING | VERIFYING | DONE`
+- **Refactoring**: `PLANNING | IN_PROGRESS | REVIEW | DONE`
+
+**Document Status**:
+- **Plans**: `DRAFT | APPROVED | IN_PROGRESS | COMPLETED | ARCHIVED`
+- **Requirements**: `DRAFT | REVIEWED | APPROVED | IMPLEMENTED`
+- **ADR**: `PROPOSED | ACCEPTED | DEPRECATED | SUPERSEDED`
 
 ### Test Reports (`tests/` directory)
 
@@ -193,40 +284,150 @@ checkpoint-phase{N}.md      # Individual phase checkpoints (OPTIONAL)
 checkpoint-{feature}.md     # Feature-specific checkpoints (OPTIONAL)
 ```
 
-**Checkpoint Purpose**:
-- **Project Milestones**: Record major project phase completions
-- **Progress Tracking**: Centralized location for all milestone records
-- **Knowledge Preservation**: Capture decisions, metrics, and lessons learned
-- **Easy Review**: Single `checkpoint-complete.md` for entire project overview
+### Checkpoint Purpose
+
+**项目里程碑**: 记录功能/项目阶段完成情况
+
+- **Progress Tracking**: 所有关键里程碑的集中记录位置
+- **Knowledge Preservation**: 捕获决策、指标和经验教训
+- **Easy Review**: 单一 `checkpoint-complete.md` 查看整体进度
 
 **Checkpoint Content Requirements**:
-1. **Executive Summary**: Brief overview of achievements
-2. **Implementation Details**: Key features and deliverables
-3. **Metrics**: Code statistics, test coverage, development time
-4. **Git Commits**: Relevant commit hashes and messages
-5. **Lessons Learned**: What went well and improvements
-6. **Next Steps**: Future enhancements or follow-up work
+1. **Executive Summary**: 成就概览
+2. **Implementation Details**: 关键功能和交付物
+3. **Metrics**: 代码统计、测试覆盖率、开发时间
+4. **Git Commits**: 相关 commit hash 和消息
+5. **Lessons Learned**: 进展顺利和改进点
+6. **Next Steps**: 未来增强或后续工作
 
 **Checkpoint Creation Workflow**:
-1. Complete a major milestone (phase/feature)
-2. Run full test suite and record metrics
-3. Create/update `checkpoint-complete.md` with summary
-4. Optionally create individual `checkpoint-phase{N}.md` for detailed records
-5. Save checkpoint to `docs/checkpoints/` directory
-6. Git commit with descriptive message
-7. Update memory knowledge graph with entities and relations
+1. 完成重要里程碑（阶段/功能）
+2. 运行完整测试套件并记录指标
+3. 更新 `checkpoint-complete.md` 添加摘要
+4. 可选：创建独立的 `checkpoint-v{version}.md` 详细记录
+5. 保存 checkpoint 到 `docs/checkpoints/{feature}/` 目录
+6. Git commit 并附带描述性消息
+7. 更新 memory knowledge graph
 
 **IMPORTANT**:
-- Always maintain `checkpoint-complete.md` as the **single source of truth** for entire project progress
-- Individual phase checkpoints are optional detailed records
-- Use `/everything-claude-code:checkpoint` command to extract and save progress
-- All checkpoints MUST be in `docs/checkpoints/`, never in `docs/active/`
+- `checkpoint-complete.md` 始终作为整个功能的**单一真相来源**
+- 各版本 checkpoint 是可选的详细记录
+- 使用 `/everything-claude-code:checkpoint` 命令提取和保存进度
+- 所有 checkpoints 必须在 `docs/checkpoints/{feature}/` 中，绝不在 `docs/active/`
+
+### Archive Purpose
+
+**归档旧文档**: 保存已完成的版本文档
+
+**归档内容**:
+- ✅ 旧版本的 `active/` 进度文件
+- ✅ 旧版本的 `plans/` 执行计划
+- ✅ 旧版本的 `reports/` 测试报告
+- ✅ 过时的参考文档
+
+**归档时机**:
+- 版本发布并创建 checkpoint 后
+- 文档内容被新版本替代后
+- 临时文档不再需要引用后
+
+**归档结构**:
+```
+archive/{feature}/
+├── v0.1/                    # 版本归档
+│   ├── active/             # 旧 active 文件
+│   ├── plans/              # 旧 plans
+│   └── reports/            # 旧 reports
+└── deprecated/             # 废弃文档
+    └── old-design.md
+```
 
 ### Maintenance
 
 - Use `/update-docs` command for automatic documentation updates
-- AI maintains progress files in `active/` directory
+- AI maintains progress files in `active/{feature}/v{version}/` directory
+- Archive completed versions to `archive/{feature}/v{version}/`
 - Follow [CLAUDE.md](../CLAUDE.md) specifications
+
+### Documentation Workflow
+
+**新建版本开发流程**:
+```
+1. 创建 plans/{feature}/v{version}/execution-plan.md
+2. 创建 active/{feature}/v{version}/ (空目录)
+3. 开始开发，AI 在 active/ 下创建进度文件
+4. 完成后创建 reports/{feature}/v{version}/test-report.md
+5. 更新 checkpoints/{feature}/checkpoint-complete.md
+6. 归档: mv active/{feature}/v{version}/ archive/{feature}/v{version}/active/
+```
+
+**文档生命周期**:
+```
+plans (draft) → active (in_progress) → reports (completed) → archive (historical)
+                ↓
+         checkpoints (milestones)
+```
+
+### Quick Reference
+
+| 文档类型 | 目录位置 | 是否包含版本 | 归档时机 |
+|---------|---------|-------------|---------|
+| 需求文档 | `requirements/{feature}/` | ❌ | 不归档（持续更新） |
+| 架构决策 | `decisions/{feature}/` | ❌ | 不归档（状态标记为 DEPRECATED） |
+| 执行计划 | `plans/{feature}/v{version}/` | ✅ | 版本完成后 |
+| 进度追踪 | `active/{feature}/v{version}/` | ✅ | 版本完成后 |
+| 测试报告 | `reports/{feature}/v{version}/` | ✅ | 版本完成后 |
+| 里程碑 | `checkpoints/{feature}/` | ❌ | 不归档（持续积累） |
+| 旧文档 | `archive/{feature}/v{version}/` | ✅ | 永久归档 |
+
+### Example: MCDA-Core Feature
+
+**完整目录结构**:
+```
+docs/
+├── requirements/
+│   └── mcda-core/
+│       ├── requirements.md
+│       └── README.md
+├── decisions/
+│   └── mcda-core/
+│       ├── 001-algorithms-architecture.md
+│       ├── 002-normalization-methods.md
+│       ├── 003-weighting-roadmap.md
+│       └── README.md
+├── plans/
+│   └── mcda-core/
+│       ├── v0.1/
+│       ├── v0.2/
+│       ├── v0.3/
+│       └── v0.4/
+│           └── advanced-features-execution-plan.md
+├── active/
+│   └── mcda-core/
+│       └── v0.4/
+│           ├── tdd-todim.md
+│           └── fix-electre-kernel.md
+├── reports/
+│   └── mcda-core/
+│       ├── v0.1/
+│       ├── v0.2/
+│       └── v0.3/
+│           └── test-report-v0.3.md
+├── checkpoints/
+│   └── mcda-core/
+│       ├── checkpoint-complete.md
+│       ├── checkpoint-v0.3-phase2.md
+│       └── checkpoint-v0.3-complete.md
+└── archive/
+    └── mcda-core/
+        ├── v0.1/
+        │   ├── active/
+        │   ├── plans/
+        │   └── reports/
+        └── v0.2/
+            ├── active/
+            ├── plans/
+            └── reports/
+```
 
 ---
 
@@ -374,7 +575,7 @@ experiment/xxx → Experimental features (can be discarded)
 - 小写字母
 - 连字符分隔
 - 简洁描述（2-3个单词）
-- **不加版本号**（❌ `feature/mcda-v0.3` → ✅ `feature/mcda-core`）
+- **feature开发分支不加版本号**（❌ `feature/mcda-v0.3` → ✅ `feature/mcda-core`）
 
 **版本管理**:
 - 版本号通过 `docs/plans/{project}/v{version}/` 管理
