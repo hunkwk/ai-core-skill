@@ -55,6 +55,11 @@ docs/
 │   # - tdd-{feature}.md
 │   # - fix-{bug-name}.md
 │   # - refactor-{target}.md
+├── checkpoints/                     # **Project milestone checkpoints**
+│   ├── README.md                   # Checkpoints index
+│   ├── checkpoint-complete.md      # Unified complete project checkpoint
+│   ├── checkpoint-phase{N}.md      # Individual phase checkpoints
+│   └── checkpoint-{feature}.md     # Feature-specific checkpoints
 ├── reports/                        # Analysis & metrics
 │   ├── README.md
 │   └── README_CN.md
@@ -77,6 +82,44 @@ refactor-{target}.md  # Refactoring tasks
 **Status Tracking**:
 - **TDD**: `RED | GREEN | REFACTOR | DONE`
 - **Bug Fix**: `REPRODUCING | DIAGNOSING | FIXING | VERIFYING | DONE`
+
+### Checkpoint Files
+
+**Checkpoint Documentation** (`checkpoints/`):
+```
+checkpoint-complete.md      # Unified complete project checkpoint (REQUIRED)
+checkpoint-phase{N}.md      # Individual phase checkpoints (OPTIONAL)
+checkpoint-{feature}.md     # Feature-specific checkpoints (OPTIONAL)
+```
+
+**Checkpoint Purpose**:
+- **Project Milestones**: Record major project phase completions
+- **Progress Tracking**: Centralized location for all milestone records
+- **Knowledge Preservation**: Capture decisions, metrics, and lessons learned
+- **Easy Review**: Single `checkpoint-complete.md` for entire project overview
+
+**Checkpoint Content Requirements**:
+1. **Executive Summary**: Brief overview of achievements
+2. **Implementation Details**: Key features and deliverables
+3. **Metrics**: Code statistics, test coverage, development time
+4. **Git Commits**: Relevant commit hashes and messages
+5. **Lessons Learned**: What went well and improvements
+6. **Next Steps**: Future enhancements or follow-up work
+
+**Checkpoint Creation Workflow**:
+1. Complete a major milestone (phase/feature)
+2. Run full test suite and record metrics
+3. Create/update `checkpoint-complete.md` with summary
+4. Optionally create individual `checkpoint-phase{N}.md` for detailed records
+5. Save checkpoint to `docs/checkpoints/` directory
+6. Git commit with descriptive message
+7. Update memory knowledge graph with entities and relations
+
+**IMPORTANT**:
+- Always maintain `checkpoint-complete.md` as the **single source of truth** for entire project progress
+- Individual phase checkpoints are optional detailed records
+- Use `/everything-claude-code:checkpoint` command to extract and save progress
+- All checkpoints MUST be in `docs/checkpoints/`, never in `docs/active/`
 
 ### Maintenance
 
