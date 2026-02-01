@@ -1,11 +1,11 @@
 """MCDA Core - 异常定义"""
-from typing import Any
+from typing import Any, Optional
 
 
 class MCDAError(Exception):
     """MCDA 异常基类"""
 
-    def __init__(self, message: str, details: dict[str, Any] | None = None, **kwargs: Any):
+    def __init__(self, message: str, details: Optional[dict[str, Any]] = None, **kwargs: Any):
         self.message = message
         # 合并 details 和 kwargs
         self.details = {**(details or {}), **kwargs}
