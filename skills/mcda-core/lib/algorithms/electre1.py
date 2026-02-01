@@ -339,7 +339,7 @@ def _build_rankings(
         RankingItem 列表
     """
     rankings = []
-    current_rank = 1
+    current_rank = 0  # 从 0 开始,第一个元素会变成 1
 
     # 先排列核内的方案 (按可信度总和降序)
     kernel_scores = []
@@ -353,13 +353,12 @@ def _build_rankings(
 
     # 为核内方案分配排名
     prev_score = None
-    for alt, score in kernel_scores:
+    for i, (alt, score) in enumerate(kernel_scores):
         if prev_score is not None and abs(score - prev_score) < 1e-10:
             # 相同得分，相同排名
             pass
         else:
-            if prev_score is not None:
-                current_rank += 1
+            current_rank += 1
 
         rankings.append(RankingItem(
             rank=current_rank,
@@ -367,9 +366,6 @@ def _build_rankings(
             score=float(score)
         ))
         prev_score = score
-
-    # 核内方案排名完成后，更新排名
-    current_rank += 1
 
     # 然后排列核外的方案 (按可信度总和降序)
     non_kernel = [alt for alt in alternatives if alt not in kernel]
@@ -384,13 +380,12 @@ def _build_rankings(
 
     # 为核外方案分配排名
     prev_score = None
-    for alt, score in non_kernel_scores:
+    for i, (alt, score) in enumerate(non_kernel_scores):
         if prev_score is not None and abs(score - prev_score) < 1e-10:
             # 相同得分，相同排名
             pass
         else:
-            if prev_score is not None:
-                current_rank += 1
+            current_rank += 1
 
         rankings.append(RankingItem(
             rank=current_rank,

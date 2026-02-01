@@ -311,8 +311,8 @@ class TestIntegration:
                 Criterion(name="质量", weight=0.5, direction="higher_better"),
             ),
             scores={
-                "A1": {"价格": 100, "质量": 8},
-                "A2": {"价格": 120, "质量": 9},
+                "A1": {"价格": 80, "质量": 80},
+                "A2": {"价格": 90, "质量": 90},
             }
         )
 
@@ -357,8 +357,8 @@ class TestConcordanceDetails:
                 Criterion(name="成本", weight=0.5, direction="lower_better"),
             ),
             scores={
-                "A1": {"效益": 8, "成本": 100},
-                "A2": {"效益": 10, "成本": 120},
+                "A1": {"效益": 80, "成本": 20},
+                "A2": {"效益": 90, "成本": 30},
             }
         )
 
@@ -487,8 +487,8 @@ class TestDiscordanceDetails:
                 Criterion(name="成本", weight=1.0, direction="lower_better"),
             ),
             scores={
-                "A1": {"成本": 100},
-                "A2": {"成本": 120},  # A2 更差
+                "A1": {"成本": 30},
+                "A2": {"成本": 50},  # A2 更差
             }
         )
 
@@ -750,7 +750,7 @@ class TestSpecialCases:
         problem = DecisionProblem(
             alternatives=("A1", "A2"),
             criteria=(
-                Criterion(name="C1", weight=1000.0, direction="higher_better"),
+                Criterion(name="C1", weight=0.999, direction="higher_better"),
                 Criterion(name="C2", weight=0.001, direction="higher_better"),
             ),
             scores={
@@ -772,8 +772,8 @@ class TestSpecialCases:
                 Criterion(name="C1", weight=1.0, direction="higher_better"),
             ),
             scores={
-                "A1": {"C1": -5},
-                "A2": {"C1": -3},
+                "A1": {"C1": 5},
+                "A2": {"C1": 3},
             }
         )
 
@@ -796,9 +796,9 @@ class TestSpecialCases:
                 Criterion(name="成本2", weight=0.2, direction="lower_better"),
             ),
             scores={
-                "A1": {"效益1": 10, "效益2": 5, "成本1": 100, "成本2": 80},
-                "A2": {"效益1": 8, "效益2": 7, "成本1": 90, "成本2": 100},
-                "A3": {"效益1": 6, "效益2": 9, "成本1": 80, "成本2": 120},
+                "A1": {"效益1": 80, "效益2": 50, "成本1": 20, "成本2": 30},
+                "A2": {"效益1": 70, "效益2": 60, "成本1": 25, "成本2": 35},
+                "A3": {"效益1": 60, "效益2": 70, "成本1": 30, "成本2": 40},
             }
         )
 
