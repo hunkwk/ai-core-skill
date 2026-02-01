@@ -402,7 +402,7 @@ class MCDAOrchestrator:
                 **kwargs
             )
         elif format == "json":
-            return self.reporter_service.generate_json(
+            return self.reporter_service.export_json(
                 problem=problem,
                 result=result
             )

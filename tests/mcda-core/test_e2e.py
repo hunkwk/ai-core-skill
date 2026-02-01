@@ -103,9 +103,15 @@ class TestE2EWorkflow:
         assert analysis_result.metadata.algorithm_name == "vikor"
         assert len(analysis_result.rankings) == 4
 
-        # 4. 生成 JSON 报告（暂时跳过，因为 reporter 没有 generate_json 方法）
-        # TODO: 实现 reporter.generate_json() 方法后启用此测试
-        # report = orchestrator.generate_report(problem, analysis_result, format="json")
+        # 4. 生成 JSON 报告
+        report = orchestrator.generate_report(problem, analysis_result, format="json")
+        assert report is not None
+        assert len(report) > 0
+        # 验证是有效的 JSON
+        import json
+        data = json.loads(report)
+        assert "problem" in data
+        assert "result" in data
 
     def test_invalid_weights_auto_normalization(self, invalid_weights_file):
         """测试: 无效权重自动归一化"""
@@ -423,12 +429,11 @@ class TestSystemIntegration:
             md_report = orchestrator.generate_report(problem, result, format="markdown")
             assert len(md_report) > 0
 
-            # 5. 报告（JSON）- 暂时跳过，reporter 没有 generate_json 方法
-            # TODO: 实现 reporter.generate_json() 方法后启用
-            # json_report = orchestrator.generate_report(problem, result, format="json")
-            # assert len(json_report) > 0
-            # import json
-            # json.loads(json_report)  # 验证是有效 JSON
+            # 5. 报告（JSON）
+            json_report = orchestrator.generate_report(problem, result, format="json")
+            assert len(json_report) > 0
+            import json
+            json.loads(json_report)  # 验证是有效 JSON
 
             # 6. 保存 Markdown 报告
             output_md = Path(tmpdir) / "report.md"
@@ -438,6 +443,33 @@ class TestSystemIntegration:
 
     def test_cli_to_python_api_consistency(self, vendor_selection_file):
         """测试: CLI 和 Python API 结果一致性"""
-        # 暂时跳过：需要 JSON 报告支持才能进行一致性验证
-        # TODO: 实现 reporter.generate_json() 方法后启用此测试
-        pytest.skip("需要 JSON 报告支持")
+        with TemporaryDirectory() as tmpdir:
+            # 1. 使用 Python API
+            orchestrator = MCDAOrchestrator()
+            problem = orchestrator.load_from_yaml(vendor_selection_file)
+            api_result = orchestrator.analyze(problem)
+
+            # 2. 使用 CLI
+            output_file = Path(tmpdir) / "report.json"
+            cli = MCDACommandLineInterface()
+            sys.argv = ["mcda", "analyze", str(vendor_selection_file),
+                       "-o", str(output_file), "-f", "json"]
+
+            from io import StringIO
+            captured_output = StringIO()
+            sys.stdout = captured_output
+
+            try:
+                cli.run()
+            finally:
+                sys.stdout = sys.__stdout__
+
+            # 3. 验证排名一致
+            import json
+            with open(output_file, 'r', encoding='utf-8') as f:
+                cli_data = json.load(f)
+
+            cli_ranking = [r['alternative'] for r in cli_data['result']['rankings']]
+            api_ranking = [r.alternative for r in api_result.rankings]
+
+            assert cli_ranking == api_ranking

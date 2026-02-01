@@ -153,7 +153,8 @@ class MCDACommandLineInterface:
             file_path=args.config,
             output_path=args.output,
             algorithm_name=args.algorithm,
-            run_sensitivity=args.sensitivity
+            run_sensitivity=args.sensitivity,
+            format=args.format  # 传递格式参数
         )
 
         # 如果没有指定输出文件，打印到 stdout
