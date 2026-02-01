@@ -5,6 +5,10 @@ MCDA Core - 服务模块
 """
 
 from mcda_core.services.ahp_service import AHPService, AHPValidationError
+from mcda_core.services.comparison_service import (
+    ComparisonService,
+    ComparisonValidationError
+)
 from mcda_core.services.entropy_weight_service import (
     EntropyWeightService,
     EntropyWeightValidationError
@@ -13,6 +17,8 @@ from mcda_core.services.entropy_weight_service import (
 __all__ = [
     "AHPService",
     "AHPValidationError",
+    "ComparisonService",
+    "ComparisonValidationError",
     "EntropyWeightService",
     "EntropyWeightValidationError",
 ]
