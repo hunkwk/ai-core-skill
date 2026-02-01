@@ -293,12 +293,23 @@ experiment/xxx → Experimental features (can be discarded)
 
 ### Branch Naming Convention
 
-- `feature/<short-desc>` - New feature development (e.g., `feature/user-auth`)
-- `fix/<issue-desc>` - Bug fixing (e.g., `fix/login-crash`)
-- `hotfix/<urgent-desc>` - Emergency production fix (e.g., `hotfix/payment-failure`)
-- `experiment/<name>` - Experimental features (e.g., `experiment/ai-suggestions`)
+**重要原则**: 分支名称**不包含版本号**，版本号通过文档和标签管理
 
-**Rules**: lowercase, hyphen-separated, concise (2-3 words)
+- `feature/<short-desc>` - 新功能开发（e.g., `feature/user-auth`, `feature/mcda-core`）
+- `fix/<issue-desc>` - Bug修复（e.g., `fix/login-crash`）
+- `hotfix/<urgent-desc>` - 紧急生产修复（e.g., `hotfix/payment-failure`）
+- `experiment/<name>` - 实验性功能（e.g., `experiment/ai-suggestions`）
+
+**规则**:
+- 小写字母
+- 连字符分隔
+- 简洁描述（2-3个单词）
+- **不加版本号**（❌ `feature/mcda-v0.3` → ✅ `feature/mcda-core`）
+
+**版本管理**:
+- 版本号通过 `docs/plans/{project}/v{version}/` 管理
+- 版本进度通过 `docs/active/{project}/v{version}/` 追踪
+- 发布时使用 Git Tag（如 `v0.3.0`）
 
 ### Conventional Commits
 
