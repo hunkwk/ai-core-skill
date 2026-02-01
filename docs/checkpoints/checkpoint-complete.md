@@ -430,18 +430,76 @@ mcda --version
 
 ## 📊 Checkpoint History
 
-| Date | Phase | Commit | Status |
-|------|-------|--------|--------|
-| 2026-01-31 | Phase 1 | (early) | ✅ Complete |
-| 2026-01-31 | Phase 2 | (early) | ✅ Complete |
-| 2026-01-31 | Phase 3 | (early) | ✅ Complete |
-| 2026-02-01 | Phase 4 | 0ecb93b | ✅ Complete |
-| 2026-02-01 | Phase 5 | 7cea7f5 | ✅ Complete |
-| 2026-02-01 | Phase 6 | 19ce984 | ✅ Complete |
+| Date | Version | Commit | Status | Notes |
+|------|---------|--------|--------|-------|
+| 2026-01-31 | Phase 1 | (early) | ✅ Complete | Data models & exceptions |
+| 2026-01-31 | Phase 2 | (early) | ✅ Complete | Normalization service |
+| 2026-01-31 | Phase 3 | (early) | ✅ Complete | Aggregation algorithms |
+| 2026-02-01 | Phase 4 | 0ecb93b | ✅ Complete | Validation, reporter, sensitivity |
+| 2026-02-01 | Phase 5 | 7cea7f5 | ✅ Complete | Orchestrator, CLI, utils |
+| 2026-02-01 | Phase 6 | 19ce984 | ✅ Complete | E2E tests & fixtures |
+| 2026-02-01 | v0.2.1 | 859d00d | ✅ RELEASED | 313 tests, JSON reports, complete docs |
+| 2026-02-01 | v0.3.0 | (planning) | 📋 PLANNING | JSON config, 7 algorithms, HTML reports |
+
+---
+
+## 🎉 v0.3.0 Planning Phase (2026-02-01)
+
+### Planning Summary
+
+**Status**: 📋 IN PLANNING
+**Branch**: feature/mcda-core (分支名称不加版本号)
+**Target Release**: 2026-02-15
+
+### Planned Features
+
+#### Phase 1: 配置增强
+- JSON 配置文件支持
+- 配置模板生成命令
+- 配置验证增强
+
+#### Phase 2: 算法扩展
+- AHP (层次分析法)
+- 熵权法 (客观赋权)
+- PROMETHEE-II (偏好排序)
+
+#### Phase 3: 轻量可视化
+- HTML 报告模板
+- ASCII 图表增强
+- CSS 样式主题
+
+### Architecture Decisions
+
+**ADR-005**: 配置加载器抽象层
+- ConfigLoader 接口
+- JSONLoader + YAMLLoader
+- LoaderFactory 模式
+
+### Expected Outcomes
+
+- **7种算法**（从4种增加）
+- **3种配置格式**（YAML, JSON, 自动检测）
+- **HTML报告**
+- **测试覆盖率** ≥ 90%
+- **预计时间**: 3-4周
+
+### Progress Files
+
+- Plan: `docs/plans/mcda-core/v0.3/summary.md`
+- Progress: `docs/active/mcda-core/v0.3/tdd-json-config.md`
+- ADR-005: `docs/decisions/mcda-core/005-loader-abstract-layer.md`
+
+### Git Branch Naming
+
+**重要**: 分支名称**不加版本号**
+- ✅ `feature/mcda-core` - 正确
+- ❌ `feature/mcda-v0.3` - 错误
+- 版本号通过文档结构管理
+- 发布时使用 Git Tag
 
 ---
 
 **Last Updated**: 2026-02-01
-**Total Development Time**: 2 days
-**Total Commits**: 7 (feature branch)
-**Lines Changed**: ~6545 insertions
+**Total Development Time**: 2 days (v0.2) + v0.3 planning
+**Total Commits**: 20 (merged to develop)
+**Git Tag**: v0.2.1 ✅ | v0.3.0 📋 IN PLANNING
