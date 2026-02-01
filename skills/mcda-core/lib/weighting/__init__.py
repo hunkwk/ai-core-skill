@@ -8,8 +8,14 @@ from .critic_weighting import (
     critic_weighting,
     CRITICWeightingError
 )
+from .cv_weighting import (
+    cv_weighting,
+    CVWeightingError
+)
 
 __all__ = [
     "critic_weighting",
     "CRITICWeightingError",
+    "cv_weighting",
+    "CVWeightingError",
 ]
