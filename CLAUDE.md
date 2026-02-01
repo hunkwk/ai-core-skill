@@ -83,6 +83,37 @@ refactor-{target}.md  # Refactoring tasks
 - **TDD**: `RED | GREEN | REFACTOR | DONE`
 - **Bug Fix**: `REPRODUCING | DIAGNOSING | FIXING | VERIFYING | DONE`
 
+### Test Reports (`tests/` directory)
+
+**Test Report Location**:
+- Test reports MUST be in `tests/{feature}/reports/` directory
+- Report naming: `test-report-v{version}.md` or `test-report-{date}.md`
+
+**Example Structure**:
+```
+tests/
+├── mcda-core/
+│   ├── test_*.py                    # Test files
+│   ├── fixtures/                    # Test fixtures
+│   └── reports/                     # **Test reports directory**
+│       ├── README.md                # Reports index
+│       └── test-report-v0.2.1.md   # Version-specific test report
+```
+
+**Test Report Content Requirements**:
+1. **Test Summary**: Total tests, passed, failed, coverage
+2. **Changes**: What's new in this version
+3. **Bug Fixes**: List of bugs fixed
+4. **Performance**: Execution time, benchmarks
+5. **Comparison**: Metrics compared to previous version
+6. **Known Issues**: Any warnings or limitations
+
+**IMPORTANT**:
+- Test reports are separate from project checkpoints
+- Checkpoints (`docs/checkpoints/`) record project milestones
+- Test reports (`tests/*/reports/`) record testing outcomes
+- Use test reports for version releases and quality assurance
+
 ### Checkpoint Files
 
 **Checkpoint Documentation** (`checkpoints/`):
