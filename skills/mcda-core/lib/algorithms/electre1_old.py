@@ -103,8 +103,8 @@ def electre1(
     # 6. 构建级别优于关系并提取核
     kernel = _extract_kernel(credibility, alternatives)
 
-    # 7. 构建排名 (核内方案排名靠前,按原始得分排序)
-    rankings = _build_rankings(kernel, alternatives, credibility, scores_matrix)
+    # 7. 构建排名 (核内方案排名靠前)
+    rankings = _build_rankings(kernel, alternatives, credibility)
 
     # 8. 构建元数据
     metadata = ResultMetadata(
@@ -324,47 +324,54 @@ def _extract_kernel(
 def _build_rankings(
     kernel: list,
     alternatives: tuple,
-    credibility: NDArray,
-    scores_matrix: NDArray
+    credibility: NDArray
 ) -> list:
     """构建排名
 
     核内的方案排名靠前，核外的方案排在后面
-    同组内按原始得分总和降序排列
 
     Args:
         kernel: 核中的方案列表
         alternatives: 所有方案元组
         credibility: 可信度矩阵
-        scores_matrix: 得分矩阵
 
     Returns:
         RankingItem 列表
     """
     rankings = []
 
-    # 计算所有方案的原始得分总和
+    # 计算所有方案的可信度总和
     all_scores = []
-    for i, alt in enumerate(alternatives):
-        # 使用原始得分总和,不是可信度总和
-        raw_score = np.sum(scores_matrix[i, :])
+    for alt in alternatives:
+        idx = alternatives.index(alt)
+        score = np.sum(credibility[idx, :])
         in_kernel = alt in kernel
-        all_scores.append((alt, raw_score, in_kernel))
+        all_scores.append((alt, score, in_kernel))
 
-    # 排序: 先按是否在核中 (核内优先),再按原始得分降序
-    # (not in_kernel, -raw_score) 的排序结果是: 核内在前,得分高在前
-    all_scores.sort(key=lambda x: (not x[2], -x[1]), reverse=False)
+    # 排序: 先按是否在核中 (核内优先),再按得分降序
+    all_scores.sort(key=lambda x: (not x[2], x[1]), reverse=False)
 
-    # 分配连续排名 - 每个方案都有唯一排名
+    # 分配连续排名,处理并列情况
     current_rank = 1
-    for i, (alt, raw_score, in_kernel) in enumerate(all_scores):
-        # score字段存储原始得分总和
+    prev_score = None
+    prev_in_kernel = None
+
+    for alt, score, in_kernel in all_scores:
+        # 检查是否需要新排名
+        same_score = prev_score is not None and abs(score - prev_score) < 1e-10
+        same_kernel = prev_in_kernel is not None and in_kernel == prev_in_kernel
+
+        if not same_score or not same_kernel:
+            if prev_score is not None:
+                current_rank += 1
+
         rankings.append(RankingItem(
             rank=current_rank,
             alternative=alt,
-            score=float(raw_score)
+            score=float(score)
         ))
-        # 每个元素排名递增 (不管得分是否相同)
-        current_rank += 1
+
+        prev_score = score
+        prev_in_kernel = in_kernel
 
     return rankings
