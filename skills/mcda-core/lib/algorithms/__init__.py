@@ -21,6 +21,7 @@ from mcda_core.algorithms.promethee2_service import (
     PROMETHEEValidationError
 )
 from mcda_core.algorithms.todim import todim, TODIMError
+from mcda_core.algorithms.electre1 import electre1, ELECTRE1Error
 
 __all__ = [
     # 基类和注册
@@ -36,6 +37,9 @@ __all__ = [
     # TODIM
     "todim",
     "TODIMError",
+    # ELECTRE-I
+    "electre1",
+    "ELECTRE1Error",
     # 服务
     "PROMETHEEService",
     "PROMETHEEValidationError",
