@@ -2,26 +2,27 @@
 
 **Multi-Criteria Decision Analysis Core Framework**
 
-通用多准则决策分析核心框架，支持 7 种可插拔算法模型（WSM、WPM、TOPSIS、VIKOR、AHP、熵权法、PROMETHEE-II）。
+通用多准则决策分析核心框架，支持 5 种排序算法、2 种权重服务、算法对比和可视化功能。
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B+-blue.svg)]
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)]
 [![Tests](https://img.shields.io/badge/tests-83%20passed-green.svg)]
 [![Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen.svg)]
+[![Version](https://img.shields.io/badge/version-v0.3.0-blue.svg)]
 
 ---
 
 ## 🎯 功能特性
 
 ### 核心功能
-- ✅ **7 种 MCDA 算法**: WSM、WPM、TOPSIS、VIKOR、AHP、熵权法、PROMETHEE-II
-- ✅ **权重计算服务**: AHP 主观赋权、熵权法客观赋权
+- ✅ **5 种 MCDA 排序算法**: WSM、WPM、TOPSIS、VIKOR、PROMETHEE-II
+- ✅ **2 种权重计算服务**: AHP 主观赋权、熵权法客观赋权
+- ✅ **算法对比服务**: 多算法结果对比、Spearman 相关性分析
+- ✅ **ASCII 可视化**: 柱状图、雷达图、排名对比图
 - ✅ **可插拔架构**: 算法注册机制，易于扩展
 - ✅ **数据验证**: 完整的输入验证和错误处理
 - ✅ **多种标准化**: MinMax、Vector 标准化
-- ✅ **敏感性分析**: 权重扰动对排名的影响
 - ✅ **CLI 工具**: 命令行接口，支持批量处理
-- ✅ **多格式报告**: Markdown 和 JSON 报告生成
 
 ### 算法支持
 
@@ -41,6 +42,13 @@
 |------|------|------|
 | **AHP** | Analytic Hierarchy Process | 主观赋权 |
 | **熵权法** | Entropy Weight Method | 客观赋权 |
+
+#### 高级功能
+
+| 功能 | 描述 |
+|------|------|
+| **算法对比** | 多算法结果对比、排名相关性分析 |
+| **ASCII 可视化** | 柱状图、雷达图、排名对比图 |
 
 ---
 
