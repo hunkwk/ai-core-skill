@@ -45,12 +45,17 @@ class TestBarChart:
         }
 
         visualizer = ASCIIVisualizer()
-        chart = visualizer.bar_chart(data, width=40)
+        chart_default = visualizer.bar_chart(data, width=60)
+        chart_narrow = visualizer.bar_chart(data, width=40)
 
         # 验证图表生成
-        assert len(chart) > 0
-        # 较窄的宽度应该产生较少的字符
-        assert chart.count("█") < chart.count("█") if "█" in chart else True
+        assert len(chart_default) > 0
+        assert len(chart_narrow) > 0
+
+        # 较窄的宽度应该产生较少的柱状字符
+        bar_count_default = chart_default.count("█")
+        bar_count_narrow = chart_narrow.count("█")
+        assert bar_count_narrow <= bar_count_default
 
     def test_bar_chart_normalization(self):
         """测试：数据归一化"""
