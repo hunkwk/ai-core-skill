@@ -66,7 +66,11 @@ def critic_weighting(matrix: Union[NDArray, list]) -> NDArray:
         std_dev[std_dev < 1e-10] = min_std
 
     # 3. 计算相关系数矩阵 (冲突性)
-    corr_matrix = np.corrcoef(matrix_std.T)
+    try:
+        corr_matrix = np.corrcoef(matrix_std.T)
+    except Exception:
+        # 如果相关系数计算失败,使用单位矩阵
+        corr_matrix = np.eye(n)
 
     # 处理 NaN (单值列导致的相关系数)
     corr_matrix = np.nan_to_num(corr_matrix, nan=0.0)
@@ -78,6 +82,10 @@ def critic_weighting(matrix: Union[NDArray, list]) -> NDArray:
     # C_j = σ_j * Σ(1 - r_jk)
     conflict = np.sum(1 - corr_matrix, axis=1)
     information = std_dev * conflict
+
+    # 处理零信息量
+    if np.all(np.isclose(information, 0)):
+        return np.ones(n) / n
 
     # 5. 归一化权重
     weights = information / np.sum(information)
