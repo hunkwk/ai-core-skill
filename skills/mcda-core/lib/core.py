@@ -289,12 +289,19 @@ class MCDAOrchestrator:
 
             weights[name] = weight
 
+            # 解析评分规则（如果存在）
+            scoring_rule = None
+            if "scoring_rule" in crit_data:
+                scoring_rule = self._parse_scoring_rule(crit_data["scoring_rule"])
+
             criterion_list.append(
                 Criterion(
                     name=name,
                     weight=weight,  # 临时值，稍后归一化
                     direction=direction,
-                    description=crit_data.get("description", "")
+                    description=crit_data.get("description", ""),
+                    scoring_rule=scoring_rule,
+                    column=crit_data.get("column")
                 )
             )
 
@@ -308,12 +315,107 @@ class MCDAOrchestrator:
                     name=c.name,
                     weight=normalized_weights[c.name],
                     direction=c.direction,
-                    description=c.description
+                    description=c.description,
+                    scoring_rule=c.scoring_rule,
+                    column=c.column
                 )
                 for c in criterion_list
             ]
 
         return criterion_list
+
+    def _parse_scoring_rule(self, rule_data: dict[str, Any]) -> models.ScoringRule | None:
+        """解析评分规则
+
+        Args:
+            rule_data: 评分规则配置数据
+
+        Returns:
+            评分规则对象（LinearScoringRule 或 ThresholdScoringRule）
+
+        Raises:
+            MCDAValidationError: 评分规则格式错误
+        """
+        if not rule_data:
+            return None
+
+        rule_type = rule_data.get("type")
+
+        if rule_type == "linear":
+            return self._parse_linear_rule(rule_data)
+        elif rule_type == "threshold":
+            return self._parse_threshold_rule(rule_data)
+        else:
+            raise MCDAValidationError(
+                f"不支持的评分规则类型: '{rule_type}'，"
+                f"支持的类型: 'linear', 'threshold'"
+            )
+
+    def _parse_linear_rule(self, rule_data: dict[str, Any]) -> models.LinearScoringRule:
+        """解析线性评分规则
+
+        Args:
+            rule_data: 线性评分规则配置数据
+
+        Returns:
+            LinearScoringRule 对象
+
+        Raises:
+            MCDAValidationError: 参数错误
+        """
+        try:
+            return models.LinearScoringRule(
+                min=float(rule_data["min"]),
+                max=float(rule_data["max"]),
+                scale=float(rule_data.get("scale", 100.0))
+            )
+        except KeyError as e:
+            raise MCDAValidationError(
+                f"线性评分规则缺少必需字段: {e}"
+            ) from e
+        except ValueError as e:
+            raise MCDAValidationError(
+                f"线性评分规则参数错误: {e}"
+            ) from e
+
+    def _parse_threshold_rule(self, rule_data: dict[str, Any]) -> models.ThresholdScoringRule:
+        """解析阈值评分规则
+
+        Args:
+            rule_data: 阈值评分规则配置数据
+
+        Returns:
+            ThresholdScoringRule 对象
+
+        Raises:
+            MCDAValidationError: 参数错误
+        """
+        try:
+            # 解析 ranges
+            ranges_data = rule_data.get("ranges", [])
+            if not ranges_data:
+                raise MCDAValidationError("阈值评分规则缺少 'ranges' 字段")
+
+            ranges = []
+            for range_data in ranges_data:
+                ranges.append(models.ThresholdRange(
+                    min=float(range_data["min"]) if "min" in range_data else None,
+                    max=float(range_data["max"]) if "max" in range_data else None,
+                    score=float(range_data["score"])
+                ))
+
+            return models.ThresholdScoringRule(
+                ranges=tuple(ranges),
+                default_score=float(rule_data.get("default_score", 0.0))
+            )
+        except KeyError as e:
+            raise MCDAValidationError(
+                f"阈值评分规则缺少必需字段: {e}"
+            ) from e
+        except ValueError as e:
+            raise MCDAValidationError(
+                f"阈值评分规则参数错误: {e}"
+            ) from e
 
     def _parse_scores(
         self,
