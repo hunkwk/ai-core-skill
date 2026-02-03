@@ -13,6 +13,10 @@ from mcda_core.models import (
     DecisionResult,
     Criterion,
     Direction,
+    ScoringRule,
+    LinearScoringRule,
+    ThresholdScoringRule,
+    ThresholdRange,
 )
 from mcda_core.utils import load_yaml, normalize_weights
 from mcda_core.algorithms import get_algorithm
@@ -324,7 +328,7 @@ class MCDAOrchestrator:
 
         return criterion_list
 
-    def _parse_scoring_rule(self, rule_data: dict[str, Any]) -> models.ScoringRule | None:
+    def _parse_scoring_rule(self, rule_data: dict[str, Any]) -> ScoringRule | None:
         """解析评分规则
 
         Args:
@@ -351,7 +355,7 @@ class MCDAOrchestrator:
                 f"支持的类型: 'linear', 'threshold'"
             )
 
-    def _parse_linear_rule(self, rule_data: dict[str, Any]) -> models.LinearScoringRule:
+    def _parse_linear_rule(self, rule_data: dict[str, Any]) -> LinearScoringRule:
         """解析线性评分规则
 
         Args:
@@ -364,7 +368,7 @@ class MCDAOrchestrator:
             MCDAValidationError: 参数错误
         """
         try:
-            return models.LinearScoringRule(
+            return LinearScoringRule(
                 min=float(rule_data["min"]),
                 max=float(rule_data["max"]),
                 scale=float(rule_data.get("scale", 100.0))
@@ -378,7 +382,7 @@ class MCDAOrchestrator:
                 f"线性评分规则参数错误: {e}"
             ) from e
 
-    def _parse_threshold_rule(self, rule_data: dict[str, Any]) -> models.ThresholdScoringRule:
+    def _parse_threshold_rule(self, rule_data: dict[str, Any]) -> ThresholdScoringRule:
         """解析阈值评分规则
 
         Args:
@@ -398,13 +402,13 @@ class MCDAOrchestrator:
 
             ranges = []
             for range_data in ranges_data:
-                ranges.append(models.ThresholdRange(
+                ranges.append(ThresholdRange(
                     min=float(range_data["min"]) if "min" in range_data else None,
                     max=float(range_data["max"]) if "max" in range_data else None,
                     score=float(range_data["score"])
                 ))
 
-            return models.ThresholdScoringRule(
+            return ThresholdScoringRule(
                 ranges=tuple(ranges),
                 default_score=float(rule_data.get("default_score", 0.0))
             )
