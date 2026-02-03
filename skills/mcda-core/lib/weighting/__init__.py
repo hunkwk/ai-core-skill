@@ -12,10 +12,16 @@ from .cv_weighting import (
     cv_weighting,
     CVWeightingError
 )
+from .game_theory_weighting import (
+    GameTheoryWeighting,
+    GameTheoryWeightingError
+)
 
 __all__ = [
     "critic_weighting",
     "CRITICWeightingError",
     "cv_weighting",
     "CVWeightingError",
+    "GameTheoryWeighting",
+    "GameTheoryWeightingError",
 ]
