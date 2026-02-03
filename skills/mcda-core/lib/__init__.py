@@ -19,3 +19,4 @@ from . import loaders  # noqa: F401
 from . import converters  # noqa: F401
 from . import core  # noqa: F401
 from . import cli  # noqa: F401
+from .interval import Interval, IntervalError  # noqa: F401
