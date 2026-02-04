@@ -15,9 +15,12 @@ from .base import (
 from .wsm import WSMAlgorithm
 from .wpm import WPMAlgorithm
 from .topsis import TOPSISAlgorithm
+from .topsis_interval import IntervalTOPSISAlgorithm
 from .vikor import VIKORAlgorithm
 from .vikor_interval import IntervalVIKORAlgorithm
 from .todim_interval import IntervalTODIMAlgorithm
+from .electre1_interval import ELECTRE1IntervalAlgorithm
+from .promethee2_interval import PROMETHEE2IntervalAlgorithm
 from .promethee2_service import (
     PROMETHEEService,
     PROMETHEEValidationError
@@ -35,8 +38,11 @@ __all__ = [
     "WSMAlgorithm",
     "WPMAlgorithm",
     "TOPSISAlgorithm",
+    "IntervalTOPSISAlgorithm",
     "VIKORAlgorithm",
     "IntervalVIKORAlgorithm",
+    "ELECTRE1IntervalAlgorithm",
+    "PROMETHEE2IntervalAlgorithm",
     # TODIM
     "todim",
     "TODIMError",
