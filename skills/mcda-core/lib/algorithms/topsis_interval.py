@@ -7,6 +7,8 @@ TOPSIS 区间版本算法实现
 from typing import Any, TYPE_CHECKING
 import math
 
+import numpy as np
+
 from .base import MCDAAlgorithm, register_algorithm
 
 # 类型注解导入
@@ -80,8 +82,8 @@ class IntervalTOPSISAlgorithm(MCDAAlgorithm):
             决策结果
         """
         # 运行时导入（避免循环导入）
-        from mcda_core.models import DecisionResult, RankingItem, ResultMetadata
-        from mcda_core.interval import Interval
+        from ..models import DecisionResult, RankingItem, ResultMetadata
+        from ..interval import Interval
 
         # 验证输入
         self.validate(problem)
@@ -119,7 +121,7 @@ class IntervalTOPSISAlgorithm(MCDAAlgorithm):
 
         # 6. 计算距离
         distance_to_ideal, distance_to_negative_ideal = self._calculate_distances(
-            weighted, ideal, negative_ideal
+            weighted, ideal, negative_ideal, alternatives
         )
 
         # 7. 计算相对接近度
@@ -170,7 +172,7 @@ class IntervalTOPSISAlgorithm(MCDAAlgorithm):
             标准化后的矩阵
         """
         import numpy as np
-        from mcda_core.interval import Interval
+        from ..interval import Interval
 
         n_alt, n_crit = scores_matrix.shape
 
@@ -222,7 +224,7 @@ class IntervalTOPSISAlgorithm(MCDAAlgorithm):
             加权标准化后的矩阵
         """
         import numpy as np
-        from mcda_core.interval import Interval
+        from ..interval import Interval
 
         n_alt, n_crit = normalized.shape
 
@@ -258,7 +260,7 @@ class IntervalTOPSISAlgorithm(MCDAAlgorithm):
             (理想解列表, 负理想解列表)
         """
         import numpy as np
-        from mcda_core.interval import Interval
+        from ..interval import Interval
 
         n_alt, n_crit = weighted.shape
 
@@ -290,7 +292,7 @@ class IntervalTOPSISAlgorithm(MCDAAlgorithm):
 
         return ideal, negative_ideal
 
-    def _calculate_distances(self, weighted, ideal, negative_ideal):
+    def _calculate_distances(self, weighted, ideal, negative_ideal, alternatives):
         """计算到理想解和负理想解的距离
 
         D_i⁺ = sqrt(Σ (v_ij - v_j⁺)²)
@@ -300,19 +302,20 @@ class IntervalTOPSISAlgorithm(MCDAAlgorithm):
             weighted: 加权标准化后的矩阵
             ideal: 理想解列表
             negative_ideal: 负理想解列表
+            alternatives: 备选方案元组
 
         Returns:
             (到理想解的距离字典, 到负理想解的距离字典)
         """
         import numpy as np
-        from mcda_core.interval import Interval
+        from ..interval import Interval
 
         n_alt, n_crit = weighted.shape
 
         distance_to_ideal = {}
         distance_to_negative_ideal = {}
 
-        for i, alt in enumerate(weighted):
+        for i, alt in enumerate(alternatives):
             # 计算到理想解的距离
             sum_squared_ideal = 0.0
             sum_squared_negative = 0.0
@@ -378,7 +381,7 @@ class IntervalTOPSISAlgorithm(MCDAAlgorithm):
         Returns:
             排名列表
         """
-        from mcda_core.models import RankingItem
+        from ..models import RankingItem
 
         # 按相对接近度降序排序
         sorted_alts = sorted(

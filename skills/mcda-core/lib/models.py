@@ -309,9 +309,11 @@ class DecisionProblem:
 
         # 延迟导入 Interval（避免循环导入）
         try:
-            from mcda_core.interval import Interval
+            # 尝试相对导入
+            from .interval import Interval
             IntervalType = (int, float, Interval)
         except ImportError:
+            # 回退到仅数值类型
             IntervalType = (int, float)
 
         for alt in self.alternatives:

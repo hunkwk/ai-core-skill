@@ -63,7 +63,7 @@ class TOPSISAlgorithm(MCDAAlgorithm):
             决策结果
         """
         # 运行时导入（避免循环导入）
-        from mcda_core.models import DecisionResult, RankingItem, ResultMetadata
+        from ..models import DecisionResult, RankingItem, ResultMetadata
 
         # 验证输入
         self.validate(problem)
