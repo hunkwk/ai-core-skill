@@ -29,6 +29,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 - **Shell**: Command Prompt / PowerShell
 - **Commands**: Windows syntax (use Bash tool for compatibility)
 
+**WSL2 Environment Notes**:
+- 实际运行环境是 WSL2 (Linux)，使用 Linux 命令语法
+- 双路径映射: `/mnt/d/...` (Windows) ↔ `/home/wangke/...` (WSL)
+- Python 虚拟环境: `.venv_linux/` (WSL) 或 `.venv/` (Windows)
+- 常用命令: `ls`, `grep`, `find`, `jq` (Linux 工具)
+
 ---
 
 ## 📁 Project Root Directory Structure
@@ -98,6 +104,104 @@ ai_core_skill/                       # 项目根目录
 - 所有实现代码在 `skills/` 下
 - 所有测试在 `tests/` 下
 - 旧文档归档到 `docs/archive/`
+
+### 测试目录结构
+
+**测试组织原则**: 按测试类型（单元测试/集成测试）和功能模块分层组织
+
+```
+tests/                             # 测试根目录
+├── mcda-core/                    # MCDA Core 功能测试
+│   ├── __init__.py              # 包初始化
+│   ├── conftest.py              # pytest 全局配置和共享 fixtures
+│   ├── fixtures/                # 测试数据文件
+│   ├── reports/                 # 测试报告和覆盖率报告
+│   ├── .archive/                # 已归档的旧测试文件（临时脚本等）
+│   ├── README.md                # 测试目录说明文档
+│   │
+│   ├── unit/                    # 单元测试（28个文件）
+│   │   ├── test_algorithms/     # 算法单元测试
+│   │   │   ├── test_electre1.py
+│   │   │   ├── test_promethee2_service.py
+│   │   │   ├── test_todim.py
+│   │   │   ├── test_topsis.py
+│   │   │   ├── test_topsis_interval.py
+│   │   │   ├── test_vikor.py
+│   │   │   ├── test_wpm.py
+│   │   │   └── test_wsm.py
+│   │   │
+│   │   ├── test_core/           # 核心模块单元测试
+│   │   │   ├── test_converters.py
+│   │   │   ├── test_exceptions.py
+│   │   │   ├── test_interval.py
+│   │   │   ├── test_models.py
+│   │   │   ├── test_reporter.py
+│   │   │   ├── test_sensitivity.py
+│   │   │   ├── test_utils.py
+│   │   │   └── test_validation.py
+│   │   │
+│   │   ├── test_loaders/        # 数据加载器测试
+│   │   │   ├── test_json_integration.py
+│   │   │   └── test_loaders.py
+│   │   │
+│   │   ├── test_normalization/  # 标准化方法测试
+│   │   │   ├── test_logarithmic_normalizer.py
+│   │   │   ├── test_sigmoid_normalizer.py
+│   │   │   └── test_normalization.py
+│   │   │
+│   │   ├── test_scoring/        # 评分规则测试
+│   │   │   └── test_scoring_models.py
+│   │   │
+│   │   ├── test_services/       # 服务层测试
+│   │   │   ├── test_ahp_service.py
+│   │   │   ├── test_comparison_service.py
+│   │   │   └── test_entropy_weight_service.py
+│   │   │
+│   │   ├── test_visualization/  # 可视化测试
+│   │   │   └── test_ascii_visualizer.py
+│   │   │
+│   │   └── test_weighting/      # 权重计算测试
+│   │       ├── test_critic_weighting.py
+│   │       ├── test_cv_weighting.py
+│   │       └── test_game_theory_weighting.py
+│   │
+│   └── integration/             # 集成测试（8个文件）
+│       ├── test_cli/            # CLI 集成测试
+│       │   ├── test_cli.py
+│       │   └── test_import.py
+│       ├── test_e2e.py         # 端到端测试
+│       ├── test_integration.py # 集成测试
+│       └── test_customer_*.py  # 客户评分测试（2个）
+│
+└── [其他功能的测试目录...]
+```
+
+**测试运行命令**:
+```bash
+# 运行所有测试
+pytest tests/mcda-core/
+
+# 只运行单元测试
+pytest tests/mcda-core/unit/
+
+# 只运行集成测试
+pytest tests/mcda-core/integration/
+
+# 运行特定模块测试
+pytest tests/mcda-core/unit/test_algorithms/
+
+# 使用标记运行
+pytest -m unit          # 单元测试
+pytest -m integration   # 集成测试
+pytest -m algorithms    # 算法测试
+```
+
+**测试文件放置规则**:
+- ✅ **单元测试**: `tests/{feature}/unit/test_{module}/`
+- ✅ **集成测试**: `tests/{feature}/integration/`
+- ✅ **测试数据**: `tests/{feature}/fixtures/`
+- ✅ **测试报告**: `tests/{feature}/reports/`
+- ❌ **不应该有**: 临时调试脚本（移动到 `.archive/temp_scripts/`）
 
 ---
 
@@ -280,8 +384,8 @@ tests/
 **Checkpoint Documentation** (`checkpoints/`):
 ```
 checkpoint-complete.md      # Unified complete project checkpoint (REQUIRED)
-checkpoint-phase{N}.md      # Individual phase checkpoints (OPTIONAL)
-checkpoint-{feature}.md     # Feature-specific checkpoints (OPTIONAL)
+checkpoint-v{version}.md    # Version checkpoint (OPTIONAL)
+checkpoint-v{version}-phase{N}.md  # Phase checkpoint (OPTIONAL)
 ```
 
 ### Checkpoint Purpose
@@ -291,29 +395,120 @@ checkpoint-{feature}.md     # Feature-specific checkpoints (OPTIONAL)
 - **Progress Tracking**: 所有关键里程碑的集中记录位置
 - **Knowledge Preservation**: 捕获决策、指标和经验教训
 - **Easy Review**: 单一 `checkpoint-complete.md` 查看整体进度
+- **Team Alignment**: 统一的项目进度和成就视图
 
 **Checkpoint Content Requirements**:
-1. **Executive Summary**: 成就概览
-2. **Implementation Details**: 关键功能和交付物
-3. **Metrics**: 代码统计、测试覆盖率、开发时间
-4. **Git Commits**: 相关 commit hash 和消息
-5. **Lessons Learned**: 进展顺利和改进点
-6. **Next Steps**: 未来增强或后续工作
+
+#### 必需内容 (Required)
+
+1. **📊 Executive Summary**
+   - 项目总览（名称、状态、最新版本）
+   - 核心指标（测试数、覆盖率、代码行数）
+   - 当前状态概述
+
+2. **🎯 Version Milestones**
+   - 所有版本的完成情况（v0.1 → v0.N）
+   - 每个版本的功能清单
+   - 测试统计和质量指标
+   - Git 提交 hash
+
+3. **📈 Cumulative Achievements**
+   - 累计测试统计（所有版本汇总）
+   - 算法库/功能清单
+   - 代码量统计（实现、测试、文档）
+   - 质量指标趋势
+
+4. **🏆 Quality Metrics**
+   - 代码质量评分
+   - 测试覆盖率趋势
+   - 性能指标
+   - 开发效率
+
+5. **🎓 Lessons Learned**
+   - 成功经验（⭐⭐⭐⭐⭐ 评分）
+   - 改进建议
+   - 技术债务
+
+6. **🚀 Git Commit History**
+   - 关键提交记录
+   - 当前分支状态
+   - 总提交数
+
+7. **🎯 Future Planning**
+   - 下一版本规划
+   - 长期目标
+   - 技术路线图
+
+#### 可选内容 (Optional)
+
+8. **📂 Project Structure** - 项目结构图
+9. **🔧 Tech Stack** - 技术栈清单
+10. **📝 ADR References** - 架构决策链接
+11. **🎉 Achievements** - 成就解锁清单
+12. **📊 Project Health** - 项目健康度评分
 
 **Checkpoint Creation Workflow**:
-1. 完成重要里程碑（阶段/功能）
-2. 运行完整测试套件并记录指标
-3. 更新 `checkpoint-complete.md` 添加摘要
-4. 可选：创建独立的 `checkpoint-v{version}.md` 详细记录
-5. 保存 checkpoint 到 `docs/checkpoints/{feature}/` 目录
-6. Git commit 并附带描述性消息
-7. 更新 memory knowledge graph
+
+#### 标准流程 (MUST Follow)
+
+```bash
+# 1. 完成重要里程碑（版本/阶段完成）
+# 例如：v0.6 所有 phase 完成并测试通过
+
+# 2. 运行完整测试套件并记录指标
+pytest tests/{feature}/ --cov=skills/{feature}/lib --cov-report=term-missing
+
+# 3. 收集版本信息
+git log --oneline -10                    # 最近提交
+git log --oneline --all | grep -i "v0.6" # 版本相关提交
+find tests/{feature}/ -name "test_*.py" | wc -l  # 测试数量
+
+# 4. 更新 checkpoint-complete.md
+# 添加新版本的内容到对应章节
+# - 更新 "🎯 Version Milestones" 章节
+# - 更新 "📈 Cumulative Achievements" 统计
+# - 更新 "🚀 Git Commit History" 提交记录
+# - 在 "🎯 Future Planning" 添加下一步计划
+
+# 5. Git commit checkpoint
+git add docs/checkpoints/{feature}/checkpoint-complete.md
+git commit -m "docs({feature}): 更新 checkpoint-complete.md - v0.6 完成"
+
+# 6. 更新 memory knowledge graph（可选）
+# 使用 MCP memory 工具记录关键成就
+```
+
+#### 创建时机 (WHEN to Create)
+
+✅ **必须创建 Checkpoint 的情况**:
+- 版本完成（v0.1, v0.2, ... v0.N）
+- 重大功能完成（如群决策功能）
+- 项目阶段性总结（Phase 1-N 完成）
+- 项目质量评估或报告
+
+⏸️ **可以延迟创建的情况**:
+- 小 bug 修复（不创建新 checkpoint，更新现有即可）
+- 文档更新（无需 checkpoint）
+- 代码重构（除非是重大重构）
+
+#### Checkpoint 质量标准
+
+**质量检查清单**:
+- ✅ 包含所有必需章节（7 个必需内容）
+- ✅ 版本信息完整（功能、测试、Git commit）
+- ✅ 累计统计准确（测试总数、代码行数）
+- ✅ Git 提交记录正确
+- ✅ 格式统一（使用章节标题和表格）
+- ✅ 中文叙述，技术术语保持英文
+- ✅ 无拼写错误和格式错误
 
 **IMPORTANT**:
 - `checkpoint-complete.md` 始终作为整个功能的**单一真相来源**
-- 各版本 checkpoint 是可选的详细记录
-- 使用 `/everything-claude-code:checkpoint` 命令提取和保存进度
+- 各版本 checkpoint 是可选的详细记录，但推荐创建
+- 每次完成版本后**必须更新** `checkpoint-complete.md`
 - 所有 checkpoints 必须在 `docs/checkpoints/{feature}/` 中，绝不在 `docs/active/`
+- Checkpoint 文件使用 **Markdown 格式**，便于版本控制和审查
+- Checkpoint 是**项目文档**，不是进度文件（进度在 `docs/active/`）
 
 ### Archive Purpose
 
@@ -544,6 +739,182 @@ skills/
 - **e2e-runner** - E2E testing with Vercel Agent Browser
 - **refactor-cleaner** - Dead code removal
 - **doc-updater** - Auto-update documentation
+
+---
+
+---
+
+## 🔧 Configuration Management
+
+### 全局 vs 项目级配置
+
+**配置层级**:
+1. **全局配置** (`~/.claude/settings.json`) - 所有项目共享
+2. **项目配置** (`.claude/settings.local.json`) - 项目特定
+3. **MCP 配置** (`.mcp.json`) - 项目级 MCP 服务器
+
+**配置合并策略**: 项目配置覆盖并扩展全局配置
+
+**推荐原则**:
+- **通用工具全局化**: ralph-loop, claude-md-management, github MCP
+- **技术工具项目级**: pyright-lsp, typescript-lsp, frontend-design
+- **最佳平衡**: 灵活性 + 一致性
+
+### Git Configuration Files
+
+**应该提交到 Git 的配置**:
+- ✅ `.mcp.json` - 项目 MCP 服务器配置
+- ✅ `.claude/settings.local.json` - 团队共享配置
+- ✅ `.claude/permissions.json` - 权限管理配置
+
+**不应该提交的配置**:
+- ❌ `~/.claude/settings.json` - 全局个人配置
+- ❌ GitHub Token - 已通过环境变量设置
+
+### 配置迁移最佳实践
+
+**何时迁移到全局**:
+- ✅ 纯个人工具（ralph-loop, claude-md-management）
+- ✅ 所有项目都需要（github MCP 如果主要用 GitHub）
+- ✅ 轻量级插件（不影响性能）
+
+**保留在项目级**:
+- ⚠️ 语言特定工具（pyright-lsp, typescript-lsp）
+- ⚠️ 框架特定工具（frontend-design）
+- ⚠️ 项目特定 MCP（npm MCP）
+
+**迁移流程**:
+1. 备份现有配置
+2. 更新 `~/.claude/settings.json`
+3. 从项目配置移除重复项
+4. 重启 Claude Code
+5. 验证功能正常
+
+### 配置示例
+
+**全局配置** (`~/.claude/settings.json`):
+```json
+{
+  "enabledPlugins": {
+    "everything-claude-code": true,
+    "ralph-loop": true,
+    "claude-md-management": true
+  },
+  "mcpServers": {
+    "memory": { ... },
+    "github": { ... }
+  }
+}
+```
+
+**项目配置** (`.claude/settings.local.json`):
+```json
+{
+  "enabledPlugins": {
+    "pyright-lsp": true
+  },
+  "mcpServers": {
+    "npm": { ... }
+  }
+}
+```
+
+### GitHub MCP 集成
+
+**设置 GitHub Token**:
+```bash
+# 生成 Token: https://github.com/settings/tokens
+# 权限: repo (完整仓库访问)
+echo 'export GITHUB_TOKEN="your_token_here"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**可用工具** (80+ 个):
+- `mcp__github__search_code` - 搜索代码
+- `mcp__github__search_issues` - 查询 Issues
+- `mcp__github__create_issue` - 创建 Issue
+- `mcp__github__create_pull_request` - 创建 PR
+- `mcp__github__get_file_contents` - 获取文件
+- `mcp__github__push_files` - 推送文件
+
+**使用示例**:
+```bash
+# 搜索特定文件
+mcp__github__search_code "q=pytest+language:python"
+
+# 查询开放 Issues
+mcp__github__search_issues "state=open"
+
+# 获取仓库信息
+mcp__github__get_repository_info
+```
+
+### 项目配置模板
+
+**Python 项目** (`.claude/settings.local.json`):
+```json
+{
+  "enabledPlugins": {
+    "pyright-lsp@claude-plugins-official": true
+  }
+}
+```
+
+**Node.js/TypeScript 项目**:
+```json
+{
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
+  },
+  "enabledMcpjsonServers": ["npm"],
+  "mcpServers": {
+    "npm": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-npm"]
+    }
+  }
+}
+```
+
+**前端项目**:
+```json
+{
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
+  },
+  "enabledSkills": {
+    "plugin:claude-plugins-official:frontend-design:frontend-design": true
+  }
+}
+```
+
+### 故障排除
+
+**配置不生效**:
+- 重启 Claude Code 会话
+- 检查 JSON 语法是否正确
+- 运行验证脚本: `bash ~/.claude/verify_migration.sh`
+
+**MCP 服务器连接失败**:
+- 检查网络连接
+- 验证 Token 是否正确: `echo $GITHUB_TOKEN`
+- 查看 MCP 服务器日志
+
+**Token 权限不足**:
+- 确保 Token 有 `repo` 权限
+- 重新生成 Token 并选择完整权限
+- 更新 `~/.bashrc` 并执行 `source ~/.bashrc`
+
+**恢复备份配置**:
+```bash
+# 恢复全局配置
+cp ~/.claude/backup/settings.json.backup.* ~/.claude/settings.json
+
+# 恢复项目配置
+cp .claude/settings.local.json.backup.* .claude/settings.local.json
+```
 
 ---
 
