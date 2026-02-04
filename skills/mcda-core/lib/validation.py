@@ -10,7 +10,7 @@ MCDA Core 验证服务
 
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
-from mcda_core.models import Criterion, DecisionProblem
+from .models import Criterion, DecisionProblem
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -131,7 +131,7 @@ class ValidationService:
         Raises:
             WeightValidationError: 权重未归一化且 normalize=False
         """
-        from mcda_core.exceptions import WeightValidationError
+        from .exceptions import WeightValidationError
 
         total_weight = sum(c.weight for c in criteria)
         warnings = []
@@ -199,8 +199,8 @@ class ValidationService:
         Raises:
             ScoreValidationError: 评分超出范围
         """
-        from mcda_core.exceptions import ScoreValidationError
-        from mcda_core.models import MIN_SCORE, MAX_SCORE
+        from .exceptions import ScoreValidationError
+        from .models import MIN_SCORE, MAX_SCORE
 
         errors = []
 
@@ -237,7 +237,7 @@ class ValidationService:
         Raises:
             CriteriaValidationError: 备选方案数不足
         """
-        from mcda_core.exceptions import CriteriaValidationError
+        from .exceptions import CriteriaValidationError
 
         if len(problem.alternatives) < min_count:
             raise CriteriaValidationError(
@@ -263,7 +263,7 @@ class ValidationService:
         Raises:
             CriteriaValidationError: 准则数不足
         """
-        from mcda_core.exceptions import CriteriaValidationError
+        from .exceptions import CriteriaValidationError
 
         if len(criteria) < min_count:
             raise CriteriaValidationError(

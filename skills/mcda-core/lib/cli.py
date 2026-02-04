@@ -9,9 +9,9 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-from mcda_core.core import MCDAOrchestrator
-from mcda_core.exceptions import MCDAError, YAMLParseError
-from mcda_core.converters import ConfigConverter
+from .core import MCDAOrchestrator
+from .exceptions import MCDAError, YAMLParseError
+from .converters import ConfigConverter
 
 
 # =============================================================================

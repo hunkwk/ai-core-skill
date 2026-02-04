@@ -6,7 +6,7 @@ MCDA Core - WSM 算法实现
 
 from typing import Any, TYPE_CHECKING
 
-from mcda_core.algorithms.base import MCDAAlgorithm, register_algorithm
+from .base import MCDAAlgorithm, register_algorithm
 
 # 类型注解导入
 if TYPE_CHECKING:

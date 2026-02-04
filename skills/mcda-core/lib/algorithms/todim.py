@@ -91,15 +91,22 @@ def todim(
     # 6. 排序 (降序)
     sorted_indices = np.argsort(-global_dominance)
 
-    # 构建排名
+    # 构建排名 (使用密集排名 dense ranking，确保排名连续 1, 2, 3, ...)
     rankings = []
-    for rank_idx, idx in enumerate(sorted_indices):
-        # 计算排名 (处理并列情况)
-        better_count = np.sum(global_dominance > global_dominance[idx])
-        rank = better_count + 1
+    current_rank = 1  # 当前排名
+
+    for i, idx in enumerate(sorted_indices):
+        # 检查是否与前一个元素并列（分数相同）
+        if i > 0:
+            prev_idx = sorted_indices[i - 1]
+            # 使用近似比较处理浮点数精度
+            if not np.isclose(global_dominance[idx], global_dominance[prev_idx]):
+                # 分数不同，排名递增 1
+                current_rank += 1
+            # 如果分数相同，保持 current_rank 不变（并列）
 
         rankings.append(RankingItem(
-            rank=rank,
+            rank=current_rank,
             alternative=alternatives[idx],
             score=float(global_dominance[idx])
         ))

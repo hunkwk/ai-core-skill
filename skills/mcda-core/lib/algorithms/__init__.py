@@ -4,7 +4,7 @@ MCDA Core - 汇总算法模块
 提供多种 MCDA 汇总算法实现。
 """
 
-from mcda_core.algorithms.base import (
+from .base import (
     MCDAAlgorithm,
     register_algorithm,
     get_algorithm,
@@ -12,16 +12,18 @@ from mcda_core.algorithms.base import (
 )
 
 # 导入具体算法（导入时自动注册）
-from mcda_core.algorithms.wsm import WSMAlgorithm
-from mcda_core.algorithms.wpm import WPMAlgorithm
-from mcda_core.algorithms.topsis import TOPSISAlgorithm
-from mcda_core.algorithms.vikor import VIKORAlgorithm
-from mcda_core.algorithms.promethee2_service import (
+from .wsm import WSMAlgorithm
+from .wpm import WPMAlgorithm
+from .topsis import TOPSISAlgorithm
+from .vikor import VIKORAlgorithm
+from .vikor_interval import IntervalVIKORAlgorithm
+from .todim_interval import IntervalTODIMAlgorithm
+from .promethee2_service import (
     PROMETHEEService,
     PROMETHEEValidationError
 )
-from mcda_core.algorithms.todim import todim, TODIMError
-from mcda_core.algorithms.electre1 import electre1, ELECTRE1Error
+from .todim import todim, TODIMError
+from .electre1 import electre1, ELECTRE1Error
 
 __all__ = [
     # 基类和注册
@@ -34,6 +36,7 @@ __all__ = [
     "WPMAlgorithm",
     "TOPSISAlgorithm",
     "VIKORAlgorithm",
+    "IntervalVIKORAlgorithm",
     # TODIM
     "todim",
     "TODIMError",

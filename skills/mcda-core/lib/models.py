@@ -7,7 +7,11 @@ MCDA Core - 数据模型定义
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Literal, Any
+from typing import Literal, Any, TYPE_CHECKING
+
+# 类型注解导入
+if TYPE_CHECKING:
+    from mcda_core.interval import Interval
 
 # =============================================================================
 # 模块常量
@@ -303,6 +307,13 @@ class DecisionProblem:
         """验证评分矩阵的完整性和有效性"""
         min_score, max_score = self.score_range
 
+        # 延迟导入 Interval（避免循环导入）
+        try:
+            from mcda_core.interval import Interval
+            IntervalType = (int, float, Interval)
+        except ImportError:
+            IntervalType = (int, float)
+
         for alt in self.alternatives:
             if alt not in self.scores:
                 raise ValueError(f"DecisionProblem: 缺少方案 '{alt}' 的评分")
@@ -314,14 +325,33 @@ class DecisionProblem:
                     raise ValueError(f"DecisionProblem: 缺少方案 '{alt}' 在准则 '{crit.name}' 的评分")
 
                 score = self.scores[alt][crit.name]
-                if not isinstance(score, (int, float)):
-                    raise ValueError(f"DecisionProblem: 评分必须是数值类型")
 
-                if not (min_score <= score <= max_score):
+                # 验证评分类型（支持精确数和区间数）
+                if not isinstance(score, IntervalType):
                     raise ValueError(
-                        f"DecisionProblem: 方案 '{alt}' 在准则 '{crit.name}' 的评分 {score} "
-                        f"超出范围 [{min_score}, {max_score}]"
+                        f"DecisionProblem: 评分必须是数值类型或区间类型，当前: {type(score)}"
                     )
+
+                # 验证评分范围
+                if isinstance(score, (int, float)):
+                    # 精确数验证
+                    if not (min_score <= score <= max_score):
+                        raise ValueError(
+                            f"DecisionProblem: 方案 '{alt}' 在准则 '{crit.name}' 的评分 {score} "
+                            f"超出范围 [{min_score}, {max_score}]"
+                        )
+                elif isinstance(score, Interval):
+                    # 区间数验证
+                    if not (min_score <= score.lower <= max_score):
+                        raise ValueError(
+                            f"DecisionProblem: 方案 '{alt}' 在准则 '{crit.name}' 的区间下界 {score.lower} "
+                            f"超出范围 [{min_score}, {max_score}]"
+                        )
+                    if not (min_score <= score.upper <= max_score):
+                        raise ValueError(
+                            f"DecisionProblem: 方案 '{alt}' 在准则 '{crit.name}' 的区间上界 {score.upper} "
+                            f"超出范围 [{min_score}, {max_score}]"
+                        )
 
 
 @dataclass(frozen=True)

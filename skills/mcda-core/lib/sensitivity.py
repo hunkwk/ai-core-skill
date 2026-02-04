@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from mcda_core.models import Criterion, DecisionProblem, DecisionResult, MCDAAlgorithm
+    from .models import Criterion, DecisionProblem, DecisionResult, MCDAAlgorithm
 
 
 # ============================================================================
@@ -44,8 +44,8 @@ class SensitivityService:
         Raises:
             SensitivityAnalysisError: 扰动值无效或准则不存在
         """
-        from mcda_core.exceptions import SensitivityAnalysisError
-        from mcda_core.models import PerturbationResult, SensitivityResult
+        from .exceptions import SensitivityAnalysisError
+        from .models import PerturbationResult, SensitivityResult
 
         # 验证扰动值
         if perturbation < 0.0 or perturbation > 1.0:
@@ -100,7 +100,7 @@ class SensitivityService:
                     )
 
             # 创建新的决策问题
-            from mcda_core.models import DecisionProblem
+            from .models import DecisionProblem
             new_problem = DecisionProblem(
                 alternatives=problem.alternatives,
                 criteria=tuple(new_criteria),
@@ -188,7 +188,7 @@ class SensitivityService:
         Returns:
             list[CriticalCriterion]: 关键准则列表（按影响程度降序）
         """
-        from mcda_core.models import CriticalCriterion
+        from .models import CriticalCriterion
 
         critical_criteria = []
 
@@ -243,7 +243,7 @@ class SensitivityService:
         Returns:
             SensitivityAnalysisResult: 敏感性分析结果
         """
-        from mcda_core.models import SensitivityResult, SensitivityAnalysisResult
+        from .models import SensitivityResult, SensitivityAnalysisResult
 
         # 识别关键准则
         critical_criteria = self.identify_critical_criteria(
@@ -293,4 +293,4 @@ class SensitivityService:
 # ============================================================================
 
 if TYPE_CHECKING:
-    from mcda_core.models import CriticalCriterion, SensitivityAnalysisResult
+    from .models import CriticalCriterion, SensitivityAnalysisResult

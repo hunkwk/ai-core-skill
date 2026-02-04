@@ -16,6 +16,11 @@ from .game_theory_weighting import (
     GameTheoryWeighting,
     GameTheoryWeightingError
 )
+from .pca_weighting import (
+    pca_weighting,
+    PCAWeightingError,
+    MAX_CRITERIA,
+)
 
 __all__ = [
     "critic_weighting",
@@ -24,4 +29,7 @@ __all__ = [
     "CVWeightingError",
     "GameTheoryWeighting",
     "GameTheoryWeightingError",
+    "pca_weighting",
+    "PCAWeightingError",
+    "MAX_CRITERIA",
 ]

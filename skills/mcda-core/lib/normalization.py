@@ -10,11 +10,11 @@ from typing import Any, Literal, TYPE_CHECKING
 import math
 
 # 导入类型定义（避免重复）
-from mcda_core.models import Direction
+from .models import Direction
 
 # 类型注解导入（避免循环导入）
 if TYPE_CHECKING:
-    from mcda_core.models import NormalizationConfig
+    from .models import NormalizationConfig
 
 
 # =============================================================================
@@ -271,7 +271,7 @@ class NormalizationService:
             标准化后的数据
         """
         # 运行时导入（避免循环导入）
-        from mcda_core.models import NormalizationConfig
+        from .models import NormalizationConfig
 
         result = {}
         for criterion, values in data.items():

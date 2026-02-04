@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from mcda_core.models import DecisionProblem, DecisionResult
+    from .models import DecisionProblem, DecisionResult
 
 
 # ============================================================================
@@ -242,7 +242,7 @@ class ReportService:
         Raises:
             ReportError: 文件保存失败
         """
-        from mcda_core.exceptions import ReportError
+        from .exceptions import ReportError
 
         try:
             markdown = self.generate_markdown(problem, result, title=title)
@@ -268,7 +268,7 @@ class ReportService:
         Raises:
             ReportError: 文件保存失败
         """
-        from mcda_core.exceptions import ReportError
+        from .exceptions import ReportError
 
         try:
             json_str = self.export_json(problem, result)

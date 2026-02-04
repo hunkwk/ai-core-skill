@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 import yaml
 
-from mcda_core.exceptions import YAMLParseError
+from .exceptions import YAMLParseError
 
 
 # =============================================================================

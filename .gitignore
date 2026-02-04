@@ -68,3 +68,21 @@ htmlcov/
 .dmypy.json
 dmypy.json
 .pytype/
+
+# Virtual environments
+.venv/
+.venv_linux/
+venv/
+ENV/
+env/
+
+# Python bytecode & optimization
+*.pyo
+*.pyd
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Cython generated files
+*.pyx.c
+*.pxd.c

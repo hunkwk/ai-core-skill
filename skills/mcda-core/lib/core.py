@@ -8,7 +8,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Any, Union
 
-from mcda_core.models import (
+from .models import (
     DecisionProblem,
     DecisionResult,
     Criterion,
@@ -18,17 +18,17 @@ from mcda_core.models import (
     ThresholdScoringRule,
     ThresholdRange,
 )
-from mcda_core.utils import load_yaml, normalize_weights
-from mcda_core.algorithms import get_algorithm
-from mcda_core.validation import ValidationService, ValidationResult
-from mcda_core.reporter import ReportService
-from mcda_core.sensitivity import SensitivityService
-from mcda_core.exceptions import (
+from .utils import load_yaml, normalize_weights
+from .algorithms import get_algorithm
+from .validation import ValidationService, ValidationResult
+from .reporter import ReportService
+from .sensitivity import SensitivityService
+from .exceptions import (
     MCDAError,
     YAMLParseError,
     ValidationError as MCDAValidationError,
 )
-from mcda_core.loaders import JSONLoader, YAMLLoader, LoaderFactory
+from .loaders import JSONLoader, YAMLLoader, LoaderFactory
 
 
 # =============================================================================
