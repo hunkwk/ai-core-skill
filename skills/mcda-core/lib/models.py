@@ -194,6 +194,7 @@ class Criterion:
         description: 准则描述（可选）
         scoring_rule: 评分规则（可选，用于自动计算评分）
         column: 数据源列名（可选，用于导入外部数据）
+        veto: 否决配置（可选，用于一票否决机制）
 
     Example:
         ```python
@@ -211,6 +212,7 @@ class Criterion:
     description: str = ""
     scoring_rule: ScoringRule | None = None
     column: str | None = None
+    veto: Any | None = None  # VetoConfig | None
 
     def __post_init__(self):
         """验证参数有效性"""

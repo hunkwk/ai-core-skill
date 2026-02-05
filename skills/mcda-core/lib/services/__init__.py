@@ -9,6 +9,7 @@ from mcda_core.services.comparison_service import (
     ComparisonService,
     ComparisonValidationError
 )
+from mcda_core.services.constraint_service import ConstraintService
 from mcda_core.services.entropy_weight_service import (
     EntropyWeightService,
     EntropyWeightValidationError
@@ -19,6 +20,7 @@ __all__ = [
     "AHPValidationError",
     "ComparisonService",
     "ComparisonValidationError",
+    "ConstraintService",
     "EntropyWeightService",
     "EntropyWeightValidationError",
 ]

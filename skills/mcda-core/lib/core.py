@@ -298,6 +298,11 @@ class MCDAOrchestrator:
             if "scoring_rule" in crit_data:
                 scoring_rule = self._parse_scoring_rule(crit_data["scoring_rule"])
 
+            # 解析否决配置（如果存在）
+            veto = None
+            if "veto" in crit_data:
+                veto = self._parse_veto_config(crit_data["veto"])
+
             criterion_list.append(
                 Criterion(
                     name=name,
@@ -305,7 +310,8 @@ class MCDAOrchestrator:
                     direction=direction,
                     description=crit_data.get("description", ""),
                     scoring_rule=scoring_rule,
-                    column=crit_data.get("column")
+                    column=crit_data.get("column"),
+                    veto=veto
                 )
             )
 
@@ -321,7 +327,8 @@ class MCDAOrchestrator:
                     direction=c.direction,
                     description=c.description,
                     scoring_rule=c.scoring_rule,
-                    column=c.column
+                    column=c.column,
+                    veto=c.veto
                 )
                 for c in criterion_list
             ]
@@ -354,6 +361,103 @@ class MCDAOrchestrator:
                 f"不支持的评分规则类型: '{rule_type}'，"
                 f"支持的类型: 'linear', 'threshold'"
             )
+
+    def _parse_veto_config(self, veto_data: dict[str, Any]) -> Any | None:
+        """解析否决配置
+
+        Args:
+            veto_data: 否决配置数据
+
+        Returns:
+            VetoConfig 对象
+
+        Raises:
+            MCDAValidationError: 否决配置格式错误
+        """
+        if not veto_data:
+            return None
+
+        try:
+            from .constraints.models import VetoConfig, VetoCondition, VetoTier
+
+            veto_type = veto_data.get("type")
+
+            if veto_type == "hard" or veto_type == "soft":
+                # 解析条件
+                condition_data = veto_data.get("condition")
+                if not condition_data:
+                    raise MCDAValidationError(f"{veto_type} 否决缺少 'condition' 字段")
+
+                condition = VetoCondition(
+                    operator=condition_data["operator"],
+                    value=condition_data["value"],
+                    action=condition_data.get("action", "warning"),
+                    penalty_score=condition_data.get("penalty_score", 0.0),
+                    label=condition_data.get("label", "")
+                )
+
+                return VetoConfig(
+                    type=veto_type,
+                    condition=condition,
+                    penalty_score=veto_data.get("penalty_score", -20.0),
+                    reject_reason=veto_data.get("reject_reason", "未满足否决条件")
+                )
+
+            elif veto_type == "tiered":
+                # 解析档位
+                tiers_data = veto_data.get("tiers", [])
+                if not tiers_data:
+                    raise MCDAValidationError("tiered 否决缺少 'tiers' 字段")
+
+                tiers = []
+                for tier_data in tiers_data:
+                    tiers.append(VetoTier(
+                        min=float(tier_data["min"]),
+                        max=float(tier_data["max"]),
+                        action=tier_data.get("action", "accept"),
+                        penalty_score=tier_data.get("penalty_score", 0.0),
+                        label=tier_data.get("label", "")
+                    ))
+
+                return VetoConfig(
+                    type=veto_type,
+                    tiers=tuple(tiers)
+                )
+
+            elif veto_type == "composite":
+                # 解析组合条件
+                conditions_data = veto_data.get("conditions", [])
+                if not conditions_data:
+                    raise MCDAValidationError("composite 否决缺少 'conditions' 字段")
+
+                conditions = []
+                for cond_data in conditions_data:
+                    conditions.append(VetoCondition(
+                        operator=cond_data["operator"],
+                        value=cond_data["value"],
+                        action=cond_data.get("action", "warning"),
+                        penalty_score=cond_data.get("penalty_score", 0.0),
+                        label=cond_data.get("label", "")
+                    ))
+
+                return VetoConfig(
+                    type=veto_type,
+                    conditions=tuple(conditions),
+                    logic=veto_data.get("logic", "or")
+                )
+
+            else:
+                raise MCDAValidationError(
+                    f"不支持的否决类型: '{veto_type}'，"
+                    f"支持的类型: 'hard', 'soft', 'tiered', 'composite'"
+                )
+
+        except Exception as e:
+            if isinstance(e, MCDAValidationError):
+                raise
+            raise MCDAValidationError(
+                f"否决配置参数错误: {e}"
+            ) from e
 
     def _parse_linear_rule(self, rule_data: dict[str, Any]) -> LinearScoringRule:
         """解析线性评分规则
@@ -643,6 +747,7 @@ class MCDAOrchestrator:
         output_path: Path | str | None = None,
         algorithm_name: str | None = None,
         run_sensitivity: bool = False,
+        apply_constraints: bool = False,
         **kwargs
     ) -> DecisionResult:
         """运行完整的决策分析工作流程
@@ -652,6 +757,7 @@ class MCDAOrchestrator:
             output_path: 输出报告文件路径（可选）
             algorithm_name: 算法名称（可选）
             run_sensitivity: 是否运行敏感性分析
+            apply_constraints: 是否应用一票否决约束
             **kwargs: 额外参数
 
         Returns:
@@ -670,12 +776,31 @@ class MCDAOrchestrator:
                 details={"errors": validation_result.errors}
             )
 
+        # 2.5. 应用约束（如果启用）
+        veto_results = None
+        if apply_constraints:
+            from .services.constraint_service import ConstraintService
+            service = ConstraintService()
+
+            # 过滤问题
+            problem, veto_results = service.filter_problem(problem)
+
+            # 应用惩罚
+            problem = service.apply_penalties(problem)
+
         # 3. 分析问题
         result = self.analyze(
             problem,
             algorithm_name=algorithm_name,
             run_sensitivity=run_sensitivity
         )
+
+        # 将否决结果添加到决策结果中
+        if veto_results is not None:
+            # DecisionResult 是 frozen dataclass，需要创建新实例
+            # 这里简化处理，直接在返回前设置属性
+            # 实际项目中可能需要修改 DecisionResult 模型
+            object.__setattr__(result, 'veto_results', veto_results)
 
         # 4. 生成和保存报告（可选）
         if output_path is not None:

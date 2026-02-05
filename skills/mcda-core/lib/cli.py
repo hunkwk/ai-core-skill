@@ -93,6 +93,11 @@ class MCDACommandLineInterface:
             action="store_true",
             help="运行敏感性分析"
         )
+        analyze_parser.add_argument(
+            "--apply-constraints",
+            action="store_true",
+            help="应用一票否决约束（过滤和惩罚）"
+        )
 
         # validate 命令
         validate_parser = subparsers.add_parser(
@@ -182,6 +187,7 @@ class MCDACommandLineInterface:
             output_path=args.output,
             algorithm_name=args.algorithm,
             run_sensitivity=args.sensitivity,
+            apply_constraints=args.apply_constraints,
             format=args.format  # 传递格式参数
         )
 
