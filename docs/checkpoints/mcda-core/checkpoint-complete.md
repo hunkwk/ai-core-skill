@@ -633,10 +633,67 @@ cdee279 docs(mcda-core): Phase 4 ELECTRE-I 完成 - 更新文档和checkpoint
 
 ---
 
+## 🆕 v0.10 - Phase 1 全部完成（2026-02-05）
+
+### 功能：一票否决机制完整实现（Phase 1.1-1.5）
+
+**实现内容**:
+
+#### Phase 1.1-1.2: 核心功能 ✅
+- **数据模型**: 5 个类（VetoCondition, VetoConfig, VetoTier, VetoResult, ConstraintMetadata）
+- **评估器**: VetoEvaluator 核心评估逻辑
+- **支持 4 种否决类型**: hard, soft, tiered, composite
+
+#### Phase 1.3: 服务层 ✅
+- **ConstraintService**: 约束服务实现
+  - filter_problem(): 过滤决策问题
+  - apply_penalties(): 应用惩罚分数
+  - get_constraint_metadata(): 获取元数据统计
+
+#### Phase 1.4: CLI 集成 ✅
+- **CLI 选项**: `--apply-constraints`
+- **YAML 加载器**: 支持 veto 字段解析
+- **Orchestrator 集成**: 工作流中应用约束
+- **Criterion 模型**: 添加 veto 字段
+
+#### Phase 1.5: 测试和文档 ✅
+- **测试覆盖**: 41 个测试，100% 通过
+  - 数据模型测试: 21 个
+  - 评估器测试: 10 个
+  - 服务层测试: 8 个
+  - 集成测试: 2 个
+- **使用示例**: 完整的配置示例和 API 使用指南
+
+**测试结果**: ✅ 41/41 测试全部通过
+
+**代码量**:
+- 实现代码: ~900 行
+- 测试代码: ~800 行
+- 文档: ~400 行
+
+**技术亮点**:
+1. 完整的 TDD 流程（RED → GREEN → REFACTOR）
+2. 清晰的职责分离（模型 → 评估器 → 服务 → CLI）
+3. 向后兼容（通过 `--apply-constraints` 选项启用）
+4. 丰富的使用示例和文档
+
+**Git 提交**:
+- `8bf8cfa`: Phase 1.1-1.2（核心功能）
+- `1c221bf`: Phase 1.3-1.4（服务层 + CLI 集成）
+- `4013fd2`: checkpoint 更新
+
+**相关文档**:
+- ADR-014: 一票否决机制架构设计
+- v0.10 执行计划
+- TDD 进度文件
+- 使用示例文档
+
+---
+
 **最后更新**: 2026-02-05
 **更新者**: AI (Claude Sonnet 4.5)
 **项目状态**: 🚀 活跃开发中
-**当前版本**: v0.10 Phase 1 完成（一票否决核心功能）
+**当前版本**: v0.10 Phase 1 全部完成（一票否决完整功能）
 **下一步**: v0.10 Phase 2 - Web UI + Phase 3 - API 接口
 
 **🎉 MCDA-Core 项目进展顺利，质量优秀！继续保持！🚀**
