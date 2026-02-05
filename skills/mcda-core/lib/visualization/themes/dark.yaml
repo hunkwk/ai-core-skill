@@ -1,0 +1,88 @@
+# MCDA Core 暗色主题配置
+# 风格: 深色背景，护眼舒适
+
+name: "暗色主题"
+description: "深色背景，护眼舒适"
+version: "1.0.0"
+
+colors:
+  primary: "#61DAFB"       # 亮蓝
+  secondary: "#98C379"     # 绿色
+  accent: "#E06C75"        # 红色
+
+  background: "#282C34"    # 深灰
+  figure_bg: "#21252B"     # 更深灰
+
+  text: "#ABB2BF"          # 浅灰
+  title: "#E5E5E5"         # 近白
+  label: "#C8C8C8"         # 中浅灰
+
+  grid: "#3E4451"          # 中灰
+  axis: "#5C6370"          # 浅中灰
+
+  palette:
+    - "#61DAFB"            # 亮蓝
+    - "#98C379"            # 绿色
+    - "#E06C75"            # 红色
+    - "#D19A66"            # 橙色
+    - "#C678DD"            # 紫色
+    - "#56B6C2"            # 青色
+    - "#E5C07B"            # 黄色
+    - "#ABB2BF"            # 浅灰
+
+fonts:
+  family: "Consolas, Monaco, 'Courier New', monospace"
+  title_size: 14
+  label_size: 11
+  tick_size: 10
+  legend_size: 10
+
+  title_weight: "bold"
+  label_weight: "normal"
+
+lines:
+  linewidth: 2
+  linestyle: "-"
+  marker: "o"
+  markersize: 6
+  alpha: 0.8
+
+charts:
+  bar:
+    edgecolor: "#61DAFB"
+    alpha: 0.75
+
+  line:
+    marker: "o"
+    linestyle: "-"
+    linewidth: 2
+
+  pie:
+    startangle: 90
+    shadow: false
+    text_color: "#282C34"
+
+  radar:
+    fill_alpha: 0.2
+    line_width: 2
+    marker: "o"
+
+  heatmap:
+    cmap: "viridis"
+    show_values: false
+
+  scatter:
+    alpha: 0.7
+    size: 100
+
+layout:
+  figsize: [10, 6]
+  dpi: 100
+  tight_layout: true
+  title_pad: 20
+
+save:
+  dpi: 300
+  format: "png"
+  bbox_inches: "tight"
+  facecolor: "#282C34"
