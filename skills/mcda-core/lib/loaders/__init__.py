@@ -3,6 +3,8 @@
 提供多种配置文件格式的加载支持：
 - JSONLoader: JSON 配置文件
 - YAMLLoader: YAML 配置文件
+- CSVLoader: CSV 配置文件（v0.9 新增）
+- ExcelLoader: Excel 配置文件（v0.9 新增）
 - LoaderFactory: 自动检测格式
 
 设计遵循 ADR-005: 配置加载器抽象层
@@ -182,6 +184,9 @@ class LoaderFactory:
         '.json': JSONLoader,
         '.yaml': YAMLLoader,
         '.yml': YAMLLoader,
+        '.csv': 'CSVLoader',  # 延迟导入避免循环依赖
+        '.xlsx': 'ExcelLoader',  # 延迟导入避免循环依赖
+        '.xlsm': 'ExcelLoader',
     }
 
     @classmethod
@@ -202,10 +207,20 @@ class LoaderFactory:
         if ext not in cls._loaders:
             raise ValueError(
                 f"不支持的文件格式: {ext}. "
-                f"支持的格式: {', '.join(cls._loaders.keys())}"
+                f"支持的格式: {', '.join(cls.supported_formats())}"
             )
 
         loader_class = cls._loaders[ext]
+
+        # 延迟导入 CSV/Excel Loader（避免循环依赖和导入错误）
+        if isinstance(loader_class, str):
+            if ext == '.csv':
+                from .csv_loader import CSVLoader
+                loader_class = CSVLoader
+            elif ext in ['.xlsx', '.xlsm']:
+                from .excel_loader import ExcelLoader
+                loader_class = ExcelLoader
+
         return loader_class()
 
     @classmethod
@@ -237,9 +252,15 @@ class LoaderFactory:
         return list(cls._loaders.keys())
 
 
+# 导入 CSV/Excel Loader
+from .csv_loader import CSVLoader
+from .excel_loader import ExcelLoader
+
 __all__ = [
     'ConfigLoader',
     'JSONLoader',
     'YAMLLoader',
+    'CSVLoader',
+    'ExcelLoader',
     'LoaderFactory',
 ]

@@ -1,15 +1,10 @@
 """
-MCDA Core - 可视化模块
+MCDA Core 可视化模块
 
-提供 ASCII 和 HTML 可视化功能。
+提供决策结果的可视化功能：
+- ChartGenerator: 图表生成器
 """
 
-from mcda_core.visualization.ascii_visualizer import (
-    ASCIIVisualizer,
-    VisualizationError
-)
+from .charts import ChartGenerator
 
-__all__ = [
-    "ASCIIVisualizer",
-    "VisualizationError",
-]
+__all__ = ['ChartGenerator']
