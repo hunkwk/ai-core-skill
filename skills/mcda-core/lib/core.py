@@ -683,26 +683,55 @@ class MCDAOrchestrator:
         result: DecisionResult,
         format: str = "markdown",
         **kwargs
-    ) -> str:
+    ) -> str | bytes:
         """生成分析报告
 
         Args:
             problem: 决策问题
             result: 决策结果
-            format: 报告格式（"markdown" 或 "json"）
-            **kwargs: 额外参数
+            format: 报告格式（"markdown"、"json"、"html"、"pdf"、"excel"）
+            **kwargs: 额外参数（如 include_chart=True）
 
         Returns:
-            报告内容
+            报告内容（文本格式返回 str，二进制格式返回 bytes）
         """
+        include_chart = kwargs.get("include_chart", False)
+        title = kwargs.get("title", "MCDA 决策分析报告")
+
         if format == "markdown":
             return self.reporter_service.generate_markdown(
                 problem=problem,
-                result=result,
-                **kwargs
+                result=result
             )
         elif format == "json":
             return self.reporter_service.export_json(
+                problem=problem,
+                result=result
+            )
+        elif format == "html":
+            from .reports.html_generator import HTMLReportGenerator
+            generator = HTMLReportGenerator()
+            return generator.generate_html(
+                problem=problem,
+                result=result,
+                title=title,
+                include_chart=include_chart
+            )
+        elif format == "pdf":
+            from .reports.html_generator import HTMLReportGenerator
+            from .reports.pdf_generator import PDFReportGenerator
+            html_gen = HTMLReportGenerator()
+            pdf_gen = PDFReportGenerator(html_gen)
+            return pdf_gen.generate_pdf(
+                problem=problem,
+                result=result,
+                title=title,
+                include_chart=include_chart
+            )
+        elif format == "excel":
+            from .export.excel_exporter import ExcelExporter
+            exporter = ExcelExporter()
+            return exporter.export_excel(
                 problem=problem,
                 result=result
             )
@@ -723,19 +752,66 @@ class MCDAOrchestrator:
             problem: 决策问题
             result: 决策结果
             file_path: 输出文件路径
-            format: 报告格式（"markdown" 或 "json"）
-            **kwargs: 额外参数
+            format: 报告格式（"markdown"、"json"、"html"、"pdf"、"excel"）
+            **kwargs: 额外参数（如 include_chart=True）
         """
         file_path = Path(file_path)
+        include_chart = kwargs.get("include_chart", False)
 
-        # 生成报告
-        report = self.generate_report(problem, result, format, **kwargs)
-
-        # 保存文件
+        # 创建父目录
         file_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(report)
+        # 根据格式保存
+        if format == "markdown":
+            report = self.reporter_service.generate_markdown(
+                problem=problem,
+                result=result
+            )
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(report)
+        elif format == "json":
+            report = self.reporter_service.export_json(
+                problem=problem,
+                result=result
+            )
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(report)
+        elif format == "html":
+            from .reports.html_generator import HTMLReportGenerator
+            generator = HTMLReportGenerator()
+            # 提取 title 参数（如果有）
+            title = kwargs.get("title", "MCDA 决策分析报告")
+            generator.save_html(
+                problem=problem,
+                result=result,
+                file_path=str(file_path),
+                title=title,
+                include_chart=include_chart
+            )
+        elif format == "pdf":
+            from .reports.html_generator import HTMLReportGenerator
+            from .reports.pdf_generator import PDFReportGenerator
+            html_gen = HTMLReportGenerator()
+            pdf_gen = PDFReportGenerator(html_gen)
+            # 提取 title 参数（如果有）
+            title = kwargs.get("title", "MCDA 决策分析报告")
+            pdf_gen.save_pdf(
+                problem=problem,
+                result=result,
+                file_path=str(file_path),
+                title=title,
+                include_chart=include_chart
+            )
+        elif format == "excel":
+            from .export.excel_exporter import ExcelExporter
+            exporter = ExcelExporter()
+            exporter.save_excel(
+                problem=problem,
+                result=result,
+                file_path=str(file_path)
+            )
+        else:
+            raise ValueError(f"不支持的报告格式: {format}")
 
     # -------------------------------------------------------------------------
     # 完整工作流程

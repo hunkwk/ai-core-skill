@@ -84,9 +84,14 @@ class MCDACommandLineInterface:
         )
         analyze_parser.add_argument(
             "-f", "--format",
-            choices=["markdown", "json"],
+            choices=["markdown", "json", "html", "pdf", "excel"],
             default="markdown",
             help="报告格式（默认: markdown）"
+        )
+        analyze_parser.add_argument(
+            "--include-chart",
+            action="store_true",
+            help="包含图表（仅适用于 html/pdf 格式）"
         )
         analyze_parser.add_argument(
             "-s", "--sensitivity",
@@ -188,7 +193,8 @@ class MCDACommandLineInterface:
             algorithm_name=args.algorithm,
             run_sensitivity=args.sensitivity,
             apply_constraints=args.apply_constraints,
-            format=args.format  # 传递格式参数
+            format=args.format,
+            include_chart=args.include_chart
         )
 
         # 如果没有指定输出文件，打印到 stdout
