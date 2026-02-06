@@ -111,24 +111,39 @@ class MCDAAlgorithm(ABC):
             problem: 决策问题
 
         Raises:
-            ValueError: 数据验证失败
+            ValidationError: 数据验证失败
         """
+        from ..exceptions import ValidationError
+
         # 基本验证：至少有 2 个备选方案和 1 个准则
         if len(problem.alternatives) < 2:
-            raise ValueError(f"至少需要 2 个备选方案，当前: {len(problem.alternatives)}")
+            raise ValidationError(
+                f"至少需要 2 个备选方案，当前: {len(problem.alternatives)}",
+                details={"alternative_count": len(problem.alternatives)}
+            )
 
         if len(problem.criteria) < 1:
-            raise ValueError(f"至少需要 1 个准则，当前: {len(problem.criteria)}")
+            raise ValidationError(
+                f"至少需要 1 个准则，当前: {len(problem.criteria)}",
+                details={"criterion_count": len(problem.criteria)}
+            )
 
         # 验证评分完整性
         for alt in problem.alternatives:
             if alt not in problem.scores:
-                raise ValueError(f"备选方案 '{alt}' 缺少评分数据")
+                raise ValidationError(
+                    f"备选方案 '{alt}' 缺少评分数据",
+                    details={"alternative": alt}
+                )
 
             for crit in problem.criteria:
                 if crit.name not in problem.scores[alt]:
-                    raise ValueError(
-                        f"备选方案 '{alt}' 缺少准则 '{crit.name}' 的评分"
+                    raise ValidationError(
+                        f"备选方案 '{alt}' 缺少准则 '{crit.name}' 的评分",
+                        details={
+                            "alternative": alt,
+                            "criterion": crit.name
+                        }
                     )
 
 

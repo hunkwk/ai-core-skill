@@ -616,5 +616,30 @@ class ChartGenerator:
         self.figures.clear()
 
     def __del__(self):
-        """析构函数，确保所有图表都被关闭"""
+        """析构函数，确保所有图表都被关闭
+
+        注意: Python 不保证 __del__ 的调用时机，建议使用上下文管理器模式。
+        """
         self.clear_figures()
+
+    def __enter__(self):
+        """进入上下文管理器
+
+        Returns:
+            ChartGenerator 实例
+        """
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """退出上下文管理器，清理所有图表
+
+        Args:
+            exc_type: 异常类型
+            exc_val: 异常值
+            exc_tb: 异常跟踪
+
+        Returns:
+            False (不抑制异常)
+        """
+        self.clear_figures()
+        return False

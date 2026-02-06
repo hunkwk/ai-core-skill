@@ -77,33 +77,8 @@ class MCDAOrchestrator:
         # 1. 加载 YAML
         data = load_yaml(file_path)
 
-        # 2. 解析备选方案
-        alternatives = self._parse_alternatives(data)
-
-        # 3. 解析准则
-        criteria = self._parse_criteria(data, auto_normalize_weights)
-
-        # 4. 解析评分矩阵
-        scores = self._parse_scores(data, alternatives, criteria)
-
-        # 5. 解析算法配置
-        algorithm_config = self._parse_algorithm_config(data)
-
-        # 6. 创建决策问题
-        try:
-            problem = DecisionProblem(
-                alternatives=tuple(alternatives),
-                criteria=tuple(criteria),
-                scores=scores,
-                algorithm=algorithm_config
-            )
-        except Exception as e:
-            raise MCDAValidationError(
-                f"创建决策问题失败: {str(e)}",
-                details={"error": str(e)}
-            ) from e
-
-        return problem
+        # 2. 构建决策问题
+        return self._build_problem_from_data(data, auto_normalize_weights)
 
     def load_from_json(
         self,
@@ -127,27 +102,8 @@ class MCDAOrchestrator:
         loader = JSONLoader()
         data = loader.load(file_path)
 
-        # 复用现有的解析逻辑
-        alternatives = self._parse_alternatives(data)
-        criteria = self._parse_criteria(data, auto_normalize_weights)
-        scores = self._parse_scores(data, alternatives, criteria)
-        algorithm_config = self._parse_algorithm_config(data)
-
-        # 创建决策问题
-        try:
-            problem = DecisionProblem(
-                alternatives=tuple(alternatives),
-                criteria=tuple(criteria),
-                scores=scores,
-                algorithm=algorithm_config
-            )
-        except Exception as e:
-            raise MCDAValidationError(
-                f"创建决策问题失败: {str(e)}",
-                details={"error": str(e)}
-            ) from e
-
-        return problem
+        # 构建决策问题
+        return self._build_problem_from_data(data, auto_normalize_weights)
 
     def load_from_file(
         self,
@@ -172,7 +128,27 @@ class MCDAOrchestrator:
         loader = LoaderFactory.get_loader(file_path)
         data = loader.load(file_path)
 
-        # 复用现有的解析逻辑
+        # 构建决策问题
+        return self._build_problem_from_data(data, auto_normalize_weights)
+
+    def _build_problem_from_data(
+        self,
+        data: dict[str, Any],
+        auto_normalize_weights: bool
+    ) -> DecisionProblem:
+        """从解析后的数据构建决策问题
+
+        Args:
+            data: 已解析的配置数据
+            auto_normalize_weights: 是否自动归一化权重
+
+        Returns:
+            决策问题对象
+
+        Raises:
+            MCDAValidationError: 数据验证失败或创建失败
+        """
+        # 解析各个组件
         alternatives = self._parse_alternatives(data)
         criteria = self._parse_criteria(data, auto_normalize_weights)
         scores = self._parse_scores(data, alternatives, criteria)
@@ -180,7 +156,7 @@ class MCDAOrchestrator:
 
         # 创建决策问题
         try:
-            problem = DecisionProblem(
+            return DecisionProblem(
                 alternatives=tuple(alternatives),
                 criteria=tuple(criteria),
                 scores=scores,
@@ -191,8 +167,6 @@ class MCDAOrchestrator:
                 f"创建决策问题失败: {str(e)}",
                 details={"error": str(e)}
             ) from e
-
-        return problem
 
     def _parse_alternatives(self, data: dict[str, Any]) -> list[str]:
         """解析备选方案列表"""
