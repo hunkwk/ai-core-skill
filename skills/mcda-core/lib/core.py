@@ -1,0 +1,855 @@
+"""
+MCDA Core - 核心编排器模块
+
+提供决策问题的完整工作流程：加载、验证、分析、报告生成。
+"""
+
+from pathlib import Path
+from datetime import datetime
+from typing import Any
+
+from .models import (
+    DecisionProblem,
+    DecisionResult,
+    Criterion,
+    Direction,
+    ScoringRule,
+    LinearScoringRule,
+    ThresholdScoringRule,
+    ThresholdRange,
+)
+from .utils import load_yaml, normalize_weights
+from .algorithms import get_algorithm
+from .validation import ValidationService, ValidationResult
+from .reporter import ReportService
+from .sensitivity import SensitivityService
+from .exceptions import (
+    MCDAError,
+    YAMLParseError,
+    ValidationError as MCDAValidationError,
+)
+from .loaders import JSONLoader, YAMLLoader, LoaderFactory
+
+
+# =============================================================================
+# MCDAOrchestrator - 核心编排器
+# =============================================================================
+
+class MCDAOrchestrator:
+    """MCDA 核心编排器
+
+    协调各个服务模块，提供完整的决策分析工作流程：
+    1. 加载配置（YAML）
+    2. 验证数据
+    3. 执行算法分析
+    4. 生成报告
+    5. 敏感性分析
+    """
+
+    def __init__(self):
+        """初始化编排器"""
+        self.validation_service = ValidationService()
+        self.reporter_service = ReportService()
+        self.sensitivity_service = SensitivityService()
+
+    # -------------------------------------------------------------------------
+    # 加载决策问题
+    # -------------------------------------------------------------------------
+
+    def load_from_yaml(
+        self,
+        file_path: Path | str,
+        auto_normalize_weights: bool = True
+    ) -> DecisionProblem:
+        """从 YAML 文件加载决策问题
+
+        Args:
+            file_path: YAML 配置文件路径
+            auto_normalize_weights: 是否自动归一化权重（默认 True）
+
+        Returns:
+            决策问题对象
+
+        Raises:
+            YAMLParseError: YAML 文件格式错误
+            MCDAValidationError: 数据验证失败
+        """
+        # 1. 加载 YAML
+        data = load_yaml(file_path)
+
+        # 2. 构建决策问题
+        return self._build_problem_from_data(data, auto_normalize_weights)
+
+    def load_from_json(
+        self,
+        file_path: Path | str,
+        auto_normalize_weights: bool = True
+    ) -> DecisionProblem:
+        """从 JSON 文件加载决策问题
+
+        Args:
+            file_path: JSON 配置文件路径
+            auto_normalize_weights: 是否自动归一化权重（默认 True）
+
+        Returns:
+            决策问题对象
+
+        Raises:
+            ConfigLoadError: JSON 文件格式错误
+            MCDAValidationError: 数据验证失败
+        """
+        # 使用 JSONLoader 加载
+        loader = JSONLoader()
+        data = loader.load(file_path)
+
+        # 构建决策问题
+        return self._build_problem_from_data(data, auto_normalize_weights)
+
+    def load_from_file(
+        self,
+        file_path: Path | str,
+        auto_normalize_weights: bool = True
+    ) -> DecisionProblem:
+        """自动检测格式并加载配置文件
+
+        Args:
+            file_path: 配置文件路径（支持 .json, .yaml, .yml）
+            auto_normalize_weights: 是否自动归一化权重（默认 True）
+
+        Returns:
+            决策问题对象
+
+        Raises:
+            ValueError: 不支持的文件格式
+            ConfigLoadError: 配置文件格式错误
+            MCDAValidationError: 数据验证失败
+        """
+        # 使用 LoaderFactory 自动检测格式
+        loader = LoaderFactory.get_loader(file_path)
+        data = loader.load(file_path)
+
+        # 构建决策问题
+        return self._build_problem_from_data(data, auto_normalize_weights)
+
+    def _build_problem_from_data(
+        self,
+        data: dict[str, Any],
+        auto_normalize_weights: bool
+    ) -> DecisionProblem:
+        """从解析后的数据构建决策问题
+
+        Args:
+            data: 已解析的配置数据
+            auto_normalize_weights: 是否自动归一化权重
+
+        Returns:
+            决策问题对象
+
+        Raises:
+            MCDAValidationError: 数据验证失败或创建失败
+        """
+        # 解析各个组件
+        alternatives = self._parse_alternatives(data)
+        criteria = self._parse_criteria(data, auto_normalize_weights)
+        scores = self._parse_scores(data, alternatives, criteria)
+        algorithm_config = self._parse_algorithm_config(data)
+
+        # 创建决策问题
+        try:
+            return DecisionProblem(
+                alternatives=tuple(alternatives),
+                criteria=tuple(criteria),
+                scores=scores,
+                algorithm=algorithm_config
+            )
+        except Exception as e:
+            raise MCDAValidationError(
+                f"创建决策问题失败: {str(e)}",
+                details={"error": str(e)}
+            ) from e
+
+    def _parse_alternatives(self, data: dict[str, Any]) -> list[str]:
+        """解析备选方案列表"""
+        if "alternatives" not in data:
+            raise MCDAValidationError(
+                "YAML 配置缺少 'alternatives' 字段",
+                field="alternatives"
+            )
+
+        alternatives = data["alternatives"]
+
+        if not isinstance(alternatives, list):
+            raise MCDAValidationError(
+                f"'alternatives' 必须是列表，实际类型: {type(alternatives).__name__}",
+                field="alternatives"
+            )
+
+        if len(alternatives) < 2:
+            raise MCDAValidationError(
+                f"至少需要 2 个备选方案，当前: {len(alternatives)}",
+                field="alternatives",
+                count=len(alternatives)
+            )
+
+        return [str(alt) for alt in alternatives]
+
+    def _parse_criteria(
+        self,
+        data: dict[str, Any],
+        auto_normalize_weights: bool
+    ) -> list[Criterion]:
+        """解析准则列表"""
+        if "criteria" not in data:
+            raise MCDAValidationError(
+                "YAML 配置缺少 'criteria' 字段",
+                field="criteria"
+            )
+
+        criteria_data = data["criteria"]
+
+        if not isinstance(criteria_data, list):
+            raise MCDAValidationError(
+                f"'criteria' 必须是列表，实际类型: {type(criteria_data).__name__}",
+                field="criteria"
+            )
+
+        if len(criteria_data) < 1:
+            raise MCDAValidationError(
+                f"至少需要 1 个准则，当前: {len(criteria_data)}",
+                field="criteria",
+                count=len(criteria_data)
+            )
+
+        # 提取权重
+        weights = {}
+        criterion_list = []
+
+        for i, crit_data in enumerate(criteria_data):
+            if not isinstance(crit_data, dict):
+                raise MCDAValidationError(
+                    f"准则 {i} 必须是字典，实际类型: {type(crit_data).__name__}",
+                    field="criteria"
+                )
+
+            if "name" not in crit_data:
+                raise MCDAValidationError(
+                    f"准则 {i} 缺少 'name' 字段",
+                    field="criteria"
+                )
+
+            name = str(crit_data["name"])
+
+            if "weight" not in crit_data:
+                raise MCDAValidationError(
+                    f"准则 '{name}' 缺少 'weight' 字段",
+                    field="criteria",
+                    criterion=name
+                )
+
+            weight = float(crit_data["weight"])
+
+            if "direction" not in crit_data:
+                raise MCDAValidationError(
+                    f"准则 '{name}' 缺少 'direction' 字段",
+                    field="criteria",
+                    criterion=name
+                )
+
+            direction = crit_data["direction"]
+
+            if direction not in ["higher_better", "lower_better"]:
+                raise MCDAValidationError(
+                    f"准则 '{name}' 的 'direction' 值无效: '{direction}'，"
+                    f"必须是 'higher_better' 或 'lower_better'",
+                    field="criteria",
+                    criterion=name
+                )
+
+            weights[name] = weight
+
+            # 解析评分规则（如果存在）
+            scoring_rule = None
+            if "scoring_rule" in crit_data:
+                scoring_rule = self._parse_scoring_rule(crit_data["scoring_rule"])
+
+            # 解析否决配置（如果存在）
+            veto = None
+            if "veto" in crit_data:
+                veto = self._parse_veto_config(crit_data["veto"])
+
+            criterion_list.append(
+                Criterion(
+                    name=name,
+                    weight=weight,  # 临时值，稍后归一化
+                    direction=direction,
+                    description=crit_data.get("description", ""),
+                    scoring_rule=scoring_rule,
+                    column=crit_data.get("column"),
+                    veto=veto
+                )
+            )
+
+        # 归一化权重
+        if auto_normalize_weights:
+            normalized_weights = normalize_weights(weights)
+
+            # 更新准则权重
+            criterion_list = [
+                Criterion(
+                    name=c.name,
+                    weight=normalized_weights[c.name],
+                    direction=c.direction,
+                    description=c.description,
+                    scoring_rule=c.scoring_rule,
+                    column=c.column,
+                    veto=c.veto
+                )
+                for c in criterion_list
+            ]
+
+        return criterion_list
+
+    def _parse_scoring_rule(self, rule_data: dict[str, Any]) -> ScoringRule | None:
+        """解析评分规则
+
+        Args:
+            rule_data: 评分规则配置数据
+
+        Returns:
+            评分规则对象（LinearScoringRule 或 ThresholdScoringRule）
+
+        Raises:
+            MCDAValidationError: 评分规则格式错误
+        """
+        if not rule_data:
+            return None
+
+        rule_type = rule_data.get("type")
+
+        if rule_type == "linear":
+            return self._parse_linear_rule(rule_data)
+        elif rule_type == "threshold":
+            return self._parse_threshold_rule(rule_data)
+        else:
+            raise MCDAValidationError(
+                f"不支持的评分规则类型: '{rule_type}'，"
+                f"支持的类型: 'linear', 'threshold'"
+            )
+
+    def _parse_veto_config(self, veto_data: dict[str, Any]) -> Any | None:
+        """解析否决配置
+
+        Args:
+            veto_data: 否决配置数据
+
+        Returns:
+            VetoConfig 对象
+
+        Raises:
+            MCDAValidationError: 否决配置格式错误
+        """
+        if not veto_data:
+            return None
+
+        try:
+            from .constraints.models import VetoConfig, VetoCondition, VetoTier
+
+            veto_type = veto_data.get("type")
+
+            if veto_type == "hard" or veto_type == "soft":
+                # 解析条件
+                condition_data = veto_data.get("condition")
+                if not condition_data:
+                    raise MCDAValidationError(f"{veto_type} 否决缺少 'condition' 字段")
+
+                condition = VetoCondition(
+                    operator=condition_data["operator"],
+                    value=condition_data["value"],
+                    action=condition_data.get("action", "warning"),
+                    penalty_score=condition_data.get("penalty_score", 0.0),
+                    label=condition_data.get("label", "")
+                )
+
+                return VetoConfig(
+                    type=veto_type,
+                    condition=condition,
+                    penalty_score=veto_data.get("penalty_score", -20.0),
+                    reject_reason=veto_data.get("reject_reason", "未满足否决条件")
+                )
+
+            elif veto_type == "tiered":
+                # 解析档位
+                tiers_data = veto_data.get("tiers", [])
+                if not tiers_data:
+                    raise MCDAValidationError("tiered 否决缺少 'tiers' 字段")
+
+                tiers = []
+                for tier_data in tiers_data:
+                    tiers.append(VetoTier(
+                        min=float(tier_data["min"]),
+                        max=float(tier_data["max"]),
+                        action=tier_data.get("action", "accept"),
+                        penalty_score=tier_data.get("penalty_score", 0.0),
+                        label=tier_data.get("label", "")
+                    ))
+
+                return VetoConfig(
+                    type=veto_type,
+                    tiers=tuple(tiers)
+                )
+
+            elif veto_type == "composite":
+                # 解析组合条件
+                conditions_data = veto_data.get("conditions", [])
+                if not conditions_data:
+                    raise MCDAValidationError("composite 否决缺少 'conditions' 字段")
+
+                conditions = []
+                for cond_data in conditions_data:
+                    conditions.append(VetoCondition(
+                        operator=cond_data["operator"],
+                        value=cond_data["value"],
+                        action=cond_data.get("action", "warning"),
+                        penalty_score=cond_data.get("penalty_score", 0.0),
+                        label=cond_data.get("label", "")
+                    ))
+
+                return VetoConfig(
+                    type=veto_type,
+                    conditions=tuple(conditions),
+                    logic=veto_data.get("logic", "or")
+                )
+
+            else:
+                raise MCDAValidationError(
+                    f"不支持的否决类型: '{veto_type}'，"
+                    f"支持的类型: 'hard', 'soft', 'tiered', 'composite'"
+                )
+
+        except Exception as e:
+            if isinstance(e, MCDAValidationError):
+                raise
+            raise MCDAValidationError(
+                f"否决配置参数错误: {e}"
+            ) from e
+
+    def _parse_linear_rule(self, rule_data: dict[str, Any]) -> LinearScoringRule:
+        """解析线性评分规则
+
+        Args:
+            rule_data: 线性评分规则配置数据
+
+        Returns:
+            LinearScoringRule 对象
+
+        Raises:
+            MCDAValidationError: 参数错误
+        """
+        try:
+            return LinearScoringRule(
+                min=float(rule_data["min"]),
+                max=float(rule_data["max"]),
+                scale=float(rule_data.get("scale", 100.0))
+            )
+        except KeyError as e:
+            raise MCDAValidationError(
+                f"线性评分规则缺少必需字段: {e}"
+            ) from e
+        except ValueError as e:
+            raise MCDAValidationError(
+                f"线性评分规则参数错误: {e}"
+            ) from e
+
+    def _parse_threshold_rule(self, rule_data: dict[str, Any]) -> ThresholdScoringRule:
+        """解析阈值评分规则
+
+        Args:
+            rule_data: 阈值评分规则配置数据
+
+        Returns:
+            ThresholdScoringRule 对象
+
+        Raises:
+            MCDAValidationError: 参数错误
+        """
+        try:
+            # 解析 ranges
+            ranges_data = rule_data.get("ranges", [])
+            if not ranges_data:
+                raise MCDAValidationError("阈值评分规则缺少 'ranges' 字段")
+
+            ranges = []
+            for range_data in ranges_data:
+                ranges.append(ThresholdRange(
+                    min=float(range_data["min"]) if "min" in range_data else None,
+                    max=float(range_data["max"]) if "max" in range_data else None,
+                    score=float(range_data["score"])
+                ))
+
+            return ThresholdScoringRule(
+                ranges=tuple(ranges),
+                default_score=float(rule_data.get("default_score", 0.0))
+            )
+        except KeyError as e:
+            raise MCDAValidationError(
+                f"阈值评分规则缺少必需字段: {e}"
+            ) from e
+        except ValueError as e:
+            raise MCDAValidationError(
+                f"阈值评分规则参数错误: {e}"
+            ) from e
+
+    def _parse_scores(
+        self,
+        data: dict[str, Any],
+        alternatives: list[str],
+        criteria: list[Criterion]
+    ) -> dict[str, dict[str, float]]:
+        """解析评分矩阵"""
+        if "scores" not in data:
+            raise MCDAValidationError(
+                "YAML 配置缺少 'scores' 字段",
+                field="scores"
+            )
+
+        scores_data = data["scores"]
+
+        if not isinstance(scores_data, dict):
+            raise MCDAValidationError(
+                f"'scores' 必须是字典，实际类型: {type(scores_data).__name__}",
+                field="scores"
+            )
+
+        # 验证所有备选方案都有评分
+        scores = {}
+        criterion_names = {c.name for c in criteria}
+
+        for alt in alternatives:
+            if alt not in scores_data:
+                raise MCDAValidationError(
+                    f"备选方案 '{alt}' 缺少评分数据",
+                    field="scores",
+                    alternative=alt
+                )
+
+            alt_scores = scores_data[alt]
+
+            if not isinstance(alt_scores, dict):
+                raise MCDAValidationError(
+                    f"备选方案 '{alt}' 的评分必须是字典，"
+                    f"实际类型: {type(alt_scores).__name__}",
+                    field="scores",
+                    alternative=alt
+                )
+
+            # 验证所有准则都有评分
+            for crit_name in criterion_names:
+                if crit_name not in alt_scores:
+                    raise MCDAValidationError(
+                        f"备选方案 '{alt}' 在准则 '{crit_name}' 缺少评分",
+                        field="scores",
+                        alternative=alt,
+                        criterion=crit_name
+                    )
+
+            # 转换评分
+            scores[alt] = {crit: float(alt_scores[crit]) for crit in criterion_names}
+
+        return scores
+
+    def _parse_algorithm_config(self, data: dict[str, Any]) -> dict[str, Any]:
+        """解析算法配置"""
+        if "algorithm" not in data:
+            raise MCDAValidationError(
+                "YAML 配置缺少 'algorithm' 字段",
+                field="algorithm"
+            )
+
+        algo_config = data["algorithm"]
+
+        if not isinstance(algo_config, dict):
+            # 如果是字符串，转换为字典
+            if isinstance(algo_config, str):
+                return {"name": algo_config}
+            else:
+                raise MCDAValidationError(
+                    f"'algorithm' 必须是字典或字符串，"
+                    f"实际类型: {type(algo_config).__name__}",
+                    field="algorithm"
+                )
+
+        if "name" not in algo_config:
+            raise MCDAValidationError(
+                "算法配置缺少 'name' 字段",
+                field="algorithm"
+            )
+
+        return algo_config
+
+    # -------------------------------------------------------------------------
+    # 验证决策问题
+    # -------------------------------------------------------------------------
+
+    def validate(self, problem: DecisionProblem) -> ValidationResult:
+        """验证决策问题
+
+        Args:
+            problem: 决策问题
+
+        Returns:
+            验证结果
+        """
+        return self.validation_service.validate(problem)
+
+    # -------------------------------------------------------------------------
+    # 分析决策问题
+    # -------------------------------------------------------------------------
+
+    def analyze(
+        self,
+        problem: DecisionProblem,
+        algorithm_name: str | None = None,
+        run_sensitivity: bool = False,
+        **algorithm_params
+    ) -> DecisionResult:
+        """分析决策问题
+
+        Args:
+            problem: 决策问题
+            algorithm_name: 算法名称（默认使用问题配置的算法）
+            run_sensitivity: 是否运行敏感性分析
+            **algorithm_params: 算法参数
+
+        Returns:
+            决策结果
+        """
+        # 1. 确定使用的算法
+        if algorithm_name is None:
+            algorithm_name = problem.algorithm.get("name", "wsm")
+
+        # 2. 获取算法实例
+        algorithm = get_algorithm(algorithm_name)
+
+        # 3. 执行分析
+        result = algorithm.calculate(problem, **algorithm_params)
+
+        # 4. 运行敏感性分析（可选）
+        if run_sensitivity:
+            sensitivity_result = self.sensitivity_service.analyze(
+                problem=problem,
+                algorithm=algorithm,
+                perturbation=0.1
+            )
+            # 更新结果的敏感性分析数据
+            # 这里取决于 DecisionResult 的具体实现
+
+        return result
+
+    # -------------------------------------------------------------------------
+    # 报告生成
+    # -------------------------------------------------------------------------
+
+    def generate_report(
+        self,
+        problem: DecisionProblem,
+        result: DecisionResult,
+        format: str = "markdown",
+        **kwargs
+    ) -> str | bytes:
+        """生成分析报告
+
+        Args:
+            problem: 决策问题
+            result: 决策结果
+            format: 报告格式（"markdown"、"json"、"html"、"pdf"、"excel"）
+            **kwargs: 额外参数（如 include_chart=True）
+
+        Returns:
+            报告内容（文本格式返回 str，二进制格式返回 bytes）
+        """
+        include_chart = kwargs.get("include_chart", False)
+        title = kwargs.get("title", "MCDA 决策分析报告")
+
+        if format == "markdown":
+            return self.reporter_service.generate_markdown(
+                problem=problem,
+                result=result
+            )
+        elif format == "json":
+            return self.reporter_service.export_json(
+                problem=problem,
+                result=result
+            )
+        elif format == "html":
+            from .reports.html_generator import HTMLReportGenerator
+            generator = HTMLReportGenerator()
+            return generator.generate_html(
+                problem=problem,
+                result=result,
+                title=title,
+                include_chart=include_chart
+            )
+        elif format == "pdf":
+            from .reports.html_generator import HTMLReportGenerator
+            from .reports.pdf_generator import PDFReportGenerator
+            html_gen = HTMLReportGenerator()
+            pdf_gen = PDFReportGenerator(html_gen)
+            return pdf_gen.generate_pdf(
+                problem=problem,
+                result=result,
+                title=title,
+                include_chart=include_chart
+            )
+        elif format == "excel":
+            from .export.excel_exporter import ExcelExporter
+            exporter = ExcelExporter()
+            return exporter.export_excel(
+                problem=problem,
+                result=result
+            )
+        else:
+            raise ValueError(f"不支持的报告格式: {format}")
+
+    def save_report(
+        self,
+        problem: DecisionProblem,
+        result: DecisionResult,
+        file_path: Path | str,
+        format: str = "markdown",
+        **kwargs
+    ) -> None:
+        """保存报告到文件
+
+        Args:
+            problem: 决策问题
+            result: 决策结果
+            file_path: 输出文件路径
+            format: 报告格式（"markdown"、"json"、"html"、"pdf"、"excel"）
+            **kwargs: 额外参数（如 include_chart=True）
+        """
+        file_path = Path(file_path)
+        include_chart = kwargs.get("include_chart", False)
+
+        # 创建父目录
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # 根据格式保存
+        if format == "markdown":
+            report = self.reporter_service.generate_markdown(
+                problem=problem,
+                result=result
+            )
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(report)
+        elif format == "json":
+            report = self.reporter_service.export_json(
+                problem=problem,
+                result=result
+            )
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(report)
+        elif format == "html":
+            from .reports.html_generator import HTMLReportGenerator
+            generator = HTMLReportGenerator()
+            # 提取 title 参数（如果有）
+            title = kwargs.get("title", "MCDA 决策分析报告")
+            generator.save_html(
+                problem=problem,
+                result=result,
+                file_path=str(file_path),
+                title=title,
+                include_chart=include_chart
+            )
+        elif format == "pdf":
+            from .reports.html_generator import HTMLReportGenerator
+            from .reports.pdf_generator import PDFReportGenerator
+            html_gen = HTMLReportGenerator()
+            pdf_gen = PDFReportGenerator(html_gen)
+            # 提取 title 参数（如果有）
+            title = kwargs.get("title", "MCDA 决策分析报告")
+            pdf_gen.save_pdf(
+                problem=problem,
+                result=result,
+                file_path=str(file_path),
+                title=title,
+                include_chart=include_chart
+            )
+        elif format == "excel":
+            from .export.excel_exporter import ExcelExporter
+            exporter = ExcelExporter()
+            exporter.save_excel(
+                problem=problem,
+                result=result,
+                file_path=str(file_path)
+            )
+        else:
+            raise ValueError(f"不支持的报告格式: {format}")
+
+    # -------------------------------------------------------------------------
+    # 完整工作流程
+    # -------------------------------------------------------------------------
+
+    def run_workflow(
+        self,
+        file_path: Path | str,
+        output_path: Path | str | None = None,
+        algorithm_name: str | None = None,
+        run_sensitivity: bool = False,
+        apply_constraints: bool = False,
+        **kwargs
+    ) -> DecisionResult:
+        """运行完整的决策分析工作流程
+
+        Args:
+            file_path: YAML 配置文件路径
+            output_path: 输出报告文件路径（可选）
+            algorithm_name: 算法名称（可选）
+            run_sensitivity: 是否运行敏感性分析
+            apply_constraints: 是否应用一票否决约束
+            **kwargs: 额外参数
+
+        Returns:
+            决策结果
+        """
+        # 1. 加载问题
+        problem = self.load_from_yaml(file_path)
+
+        # 2. 验证问题
+        validation_result = self.validate(problem)
+
+        if not validation_result.is_valid:
+            errors = ", ".join(validation_result.errors)
+            raise MCDAError(
+                f"决策问题验证失败: {errors}",
+                details={"errors": validation_result.errors}
+            )
+
+        # 2.5. 应用约束（如果启用）
+        veto_results = None
+        if apply_constraints:
+            from .services.constraint_service import ConstraintService
+            service = ConstraintService()
+
+            # 过滤问题
+            problem, veto_results = service.filter_problem(problem)
+
+            # 应用惩罚
+            problem = service.apply_penalties(problem)
+
+        # 3. 分析问题
+        result = self.analyze(
+            problem,
+            algorithm_name=algorithm_name,
+            run_sensitivity=run_sensitivity
+        )
+
+        # 将否决结果添加到决策结果中
+        if veto_results is not None:
+            # 直接设置属性（DecisionResult 不是 frozen dataclass）
+            result.veto_results = veto_results
+
+        # 4. 生成和保存报告（可选）
+        if output_path is not None:
+            self.save_report(problem, result, output_path, **kwargs)
+
+        return result

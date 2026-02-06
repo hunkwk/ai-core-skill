@@ -1,66 +1,32 @@
-# 活跃任务目录
+# Active 工作目录
 
-本目录跟踪正在进行的开发任务的执行进度。
+**用途**: 记录当前正在进行的版本开发进度
 
-## 用途
-
-实时跟踪以下任务进度：
-- TDD 开发循环
-- Bug 修复工作流
-- 重构任务
-- 性能优化
-
-## 文件命名
+## 📋 目录结构
 
 ```
-{类型}-{简述}.md
-
-类型:
-  tdd-      : TDD 开发（RED → GREEN → REFACTOR）
-  fix-      : Bug 修复（REPRODUCING → DIAGNOSING → FIXING → VERIFYING）
-  refactor- : 代码重构（ANALYSIS → REFACTORING → TESTING）
-  perf-     : 性能优化
-  exp-      : 实验性任务
-
-示例:
-  tdd-user-auth.md
-  fix-login-crash.md
-  refactor-payment-service.md
+active/
+└── {feature}/              # 功能模块
+    └── v{version}/         # 版本号
+        ├── tdd-{name}.md   # TDD 开发进度
+        ├── fix-{bug}.md    # Bug 修复进度
+        └── refactor-{target}.md  # 重构进度
 ```
 
-## 工作流程
+## 🔄 文档生命周期
 
-```bash
-# 开始新任务
-git feature user-auth
-# 创建: docs/active/tdd-user-auth.md
+1. **创建**: 版本开始时创建空目录 `active/{feature}/v{version}/`
+2. **更新**: AI 在开发过程中创建进度文件
+3. **完成**: 版本完成后移动到 `archive/{feature}/v{version}/active/`
 
-# 更新进度
-# AI 更新进度文件中的状态
+## 📌 注意事项
 
-# 完成任务
-git finish
-# 归档: docs/active/archive/2025-01/tdd-user-auth.completed.md
-```
+- ⚠️ 此目录**只包含当前进行中**的版本
+- ✅ 完成的版本**必须归档**到 `archive/`
+- 📝 进度文件命名遵循: `tdd-{name}.md`, `fix-{bug}.md`, `refactor-{target}.md`
 
-## 与 Git Flow 的集成
+## 🔗 相关文档
 
-| 分支 | 进度文件 |
-|------|---------|
-| `feature/user-auth` | `active/tdd-user-auth.md` |
-| `fix/login-crash` | `active/fix-login-crash.md` |
-| `refactor/payment` | `active/refactor-payment.md` |
-
-## 归档结构
-
-已完成的任务按月归档：
-```
-archive/
-└── 2025-01/
-    ├── tdd-user-auth.completed.md
-    └── fix-login-crash.completed.md
-```
-
----
-
-**自动维护**: AI（通过 `/tdd`、`/code-review`、`/checkpoint`）
+- [文档架构原则](../documentation-architecture-v2.md)
+- [归档目录](../archive/)
+- [计划目录](../plans/)

@@ -1,0 +1,254 @@
+# Customer Scoring Configuration
+# 50 customers x 15 criteria with direct weighting and mixed scoring rules
+
+alternatives:
+  - Customer_001
+  - Customer_002
+  - Customer_003
+  - Customer_004
+  - Customer_005
+  - Customer_006
+  - Customer_007
+  - Customer_008
+  - Customer_009
+  - Customer_010
+  - Customer_011
+  - Customer_012
+  - Customer_013
+  - Customer_014
+  - Customer_015
+  - Customer_016
+  - Customer_017
+  - Customer_018
+  - Customer_019
+  - Customer_020
+  - Customer_021
+  - Customer_022
+  - Customer_023
+  - Customer_024
+  - Customer_025
+  - Customer_026
+  - Customer_027
+  - Customer_028
+  - Customer_029
+  - Customer_030
+  - Customer_031
+  - Customer_032
+  - Customer_033
+  - Customer_034
+  - Customer_035
+  - Customer_036
+  - Customer_037
+  - Customer_038
+  - Customer_039
+  - Customer_040
+  - Customer_041
+  - Customer_042
+  - Customer_043
+  - Customer_044
+  - Customer_045
+  - Customer_046
+  - Customer_047
+  - Customer_048
+  - Customer_049
+  - Customer_050
+
+criteria:
+  # ===== Positive Indicators (Higher Better) =====
+
+  - name: annual_purchase
+    weight: 0.12
+    direction: higher_better
+    description: Annual Purchase Amount (10K)
+    column: annual_purchase
+    scoring_rule:
+      type: threshold
+      ranges:
+        - {min: 1000, score: 100}       # >= 1000万 -> 100分
+        - {min: 500, max: 1000, score: 80}    # 500-1000万 -> 80分
+        - {min: 200, max: 500, score: 60}     # 200-500万 -> 60分
+        - {min: 50, max: 200, score: 40}      # 50-200万 -> 40分
+        - {max: 50, score: 20}                # < 50万 -> 20分
+      default_score: 0
+
+  - name: purchase_growth_rate
+    weight: 0.08
+    direction: higher_better
+    description: Purchase Growth Rate (%)
+    column: purchase_growth_rate
+    scoring_rule:
+      type: minmax
+      min: -20
+      max: 50
+      scale: 100
+
+  - name: gross_margin
+    weight: 0.10
+    direction: higher_better
+    description: Gross Margin (%)
+    column: gross_margin
+    scoring_rule:
+      type: threshold
+      ranges:
+        - {min: 30, score: 100}        # >= 30% -> 100分
+        - {min: 20, max: 30, score: 80}      # 20-30% -> 80分
+        - {min: 10, max: 20, score: 60}      # 10-20% -> 60分
+        - {max: 10, score: 40}               # < 10% -> 40分
+      default_score: 0
+
+  - name: payment_timeliness
+    weight: 0.09
+    direction: higher_better
+    description: Payment Timeliness (%)
+    column: payment_timeliness
+    scoring_rule:
+      type: threshold
+      ranges:
+        - {min: 95, score: 100}        # >= 95% -> 100分
+        - {min: 85, max: 95, score: 85}      # 85-95% -> 85分
+        - {min: 70, max: 85, score: 70}      # 70-85% -> 70分
+        - {min: 50, max: 70, score: 50}      # 50-70% -> 50分
+        - {max: 50, score: 30}               # < 50% -> 30分
+      default_score: 0
+
+  - name: cooperation_years
+    weight: 0.06
+    direction: higher_better
+    description: Cooperation Years
+    column: cooperation_years
+    scoring_rule:
+      type: minmax
+      min: 0
+      max: 15
+      scale: 100
+
+  - name: order_frequency
+    weight: 0.05
+    direction: higher_better
+    description: Order Frequency (per month)
+    column: order_frequency
+    scoring_rule:
+      type: minmax
+      min: 1
+      max: 30
+      scale: 100
+
+  - name: recommendation_score
+    weight: 0.07
+    direction: higher_better
+    description: Recommendation Score (1-10)
+    column: recommendation_score
+    scoring_rule:
+      type: minmax
+      min: 1
+      max: 10
+      scale: 100
+
+  - name: loyalty_score
+    weight: 0.08
+    direction: higher_better
+    description: Loyalty Score (1-100)
+    column: loyalty_score
+    scoring_rule:
+      type: minmax
+      min: 0
+      max: 100
+      scale: 100
+
+  - name: market_influence
+    weight: 0.05
+    direction: higher_better
+    description: Market Influence (1-10)
+    column: market_influence
+    scoring_rule:
+      type: minmax
+      min: 1
+      max: 10
+      scale: 100
+
+  - name: innovation_cooperation
+    weight: 0.05
+    direction: higher_better
+    description: Innovation Cooperation (1-10)
+    column: innovation_cooperation
+    scoring_rule:
+      type: minmax
+      min: 1
+      max: 10
+      scale: 100
+
+  # ===== Negative Indicators (Lower Better) =====
+
+  - name: complaint_count
+    weight: 0.08
+    direction: lower_better
+    description: Complaint Count (per year)
+    column: complaint_count
+    scoring_rule:
+      type: threshold
+      ranges:
+        - {max: 0, score: 100}         # 0次 -> 100分
+        - {min: 0, max: 3, score: 85}        # 1-2次 -> 85分
+        - {min: 3, max: 6, score: 70}        # 3-5次 -> 70分
+        - {min: 6, max: 10, score: 50}       # 6-9次 -> 50分
+        - {min: 10, max: 15, score: 30}      # 10-14次 -> 30分
+        - {min: 15, score: 10}               # >=15次 -> 10分
+      default_score: 0
+
+  - name: return_rate
+    weight: 0.07
+    direction: lower_better
+    description: Return Rate (%)
+    column: return_rate
+    scoring_rule:
+      type: threshold
+      ranges:
+        - {max: 1, score: 100}         # <= 1% -> 100分
+        - {min: 1, max: 3, score: 85}        # 1-3% -> 85分
+        - {min: 3, max: 6, score: 70}        # 3-6% -> 70分
+        - {min: 6, max: 10, score: 50}       # 6-10% -> 50分
+        - {min: 10, score: 30}               # >10% -> 30分
+      default_score: 0
+
+  - name: overdue_days
+    weight: 0.06
+    direction: lower_better
+    description: Overdue Days (per year)
+    column: overdue_days
+    scoring_rule:
+      type: threshold
+      ranges:
+        - {max: 5, score: 100}         # <=5天 -> 100分
+        - {min: 5, max: 20, score: 85}       # 5-20天 -> 85分
+        - {min: 20, max: 45, score: 70}      # 20-45天 -> 70分
+        - {min: 45, max: 70, score: 50}      # 45-70天 -> 50分
+        - {min: 70, score: 30}               # >70天 -> 30分
+      default_score: 0
+
+  - name: price_sensitivity
+    weight: 0.04
+    direction: lower_better
+    description: Price Sensitivity (1-10, lower is better)
+    column: price_sensitivity
+    scoring_rule:
+      type: minmax
+      min: 1
+      max: 10
+      scale: 100
+
+  - name: service_cost
+    weight: 0.04
+    direction: lower_better
+    description: Service Cost (10K/year)
+    column: service_cost
+    scoring_rule:
+      type: minmax
+      min: 1
+      max: 50
+      scale: 100
+
+algorithm:
+  name: wsm
+
+# Note: Weights are normalized automatically by MCDAOrchestrator
+# Total weight = 1.00

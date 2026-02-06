@@ -50,3 +50,39 @@ node_modules/
 ~$*
 nul
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist-python/
+build-python/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+# Virtual environments
+.venv/
+.venv_linux/
+venv/
+ENV/
+env/
+
+# Python bytecode & optimization
+*.pyo
+*.pyd
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Cython generated files
+*.pyx.c
+*.pxd.c
