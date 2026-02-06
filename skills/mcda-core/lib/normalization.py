@@ -10,7 +10,7 @@ from typing import Any, Literal, TYPE_CHECKING
 import math
 
 # 导入类型定义（避免重复）
-from .models import Direction
+from .models import Direction, MIN_NORMALIZED, MAX_NORMALIZED
 
 # 类型注解导入（避免循环导入）
 if TYPE_CHECKING:
@@ -164,7 +164,7 @@ class MinMaxNormalization(NormalizationMethod):
             else:
                 norm = (max_val - value) / range_val
             # 裁剪到 [0, 1]
-            normalized[key] = max(0.0, min(1.0, norm))
+            normalized[key] = max(MIN_NORMALIZED, min(MAX_NORMALIZED, norm))
 
         return NormalizationResult(
             normalized_scores=normalized,

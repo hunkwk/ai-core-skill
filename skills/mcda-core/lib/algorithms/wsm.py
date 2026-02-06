@@ -7,6 +7,7 @@ MCDA Core - WSM 算法实现
 from typing import Any, TYPE_CHECKING
 
 from .base import MCDAAlgorithm, register_algorithm
+from ..models import MAX_SCORE
 
 # 类型注解导入
 if TYPE_CHECKING:
@@ -70,7 +71,7 @@ class WSMAlgorithm(MCDAAlgorithm):
                 # 处理 lower_better（方向反转）
                 if crit.direction == "lower_better":
                     # 假设评分在 0-100 范围内
-                    value = 100.0 - value
+                    value = MAX_SCORE - value
 
                 weighted_sum += crit.weight * value
 

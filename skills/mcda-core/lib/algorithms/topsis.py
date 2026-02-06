@@ -8,6 +8,7 @@ from typing import Any, TYPE_CHECKING
 import math
 
 from .base import MCDAAlgorithm, register_algorithm
+from ..models import MAX_SCORE
 
 # 类型注解导入
 if TYPE_CHECKING:
@@ -84,7 +85,7 @@ class TOPSISAlgorithm(MCDAAlgorithm):
 
                 # 处理 lower_better（方向反转）
                 if crit.direction == "lower_better":
-                    value = 100.0 - value
+                    value = MAX_SCORE - value
 
                 X[i, j] = value
 

@@ -9,6 +9,7 @@ from typing import Any, TYPE_CHECKING
 import math
 
 from .base import MCDAAlgorithm, register_algorithm
+from ..models import MAX_SCORE
 
 # 类型注解导入
 if TYPE_CHECKING:
@@ -148,9 +149,9 @@ class IntervalTODIMAlgorithm(MCDAAlgorithm):
 
                 # 处理 lower_better（方向反转）
                 if crit.direction == "lower_better":
-                    # 反转值：[a, b] → [100-b, 100-a]
+                    # 反转值：[a, b] → [MAX_SCORE-b, MAX_SCORE-a]
                     if isinstance(value_ij, Interval):
-                        value_ij = Interval(100.0 - value_ij.upper, 100.0 - value_ij.lower)
+                        value_ij = Interval(MAX_SCORE - value_ij.upper, MAX_SCORE - value_ij.lower)
 
                 # 计算差距（区间减法或标量减法）
                 if isinstance(value_ij, Interval) and isinstance(ref_point, (int, float)):

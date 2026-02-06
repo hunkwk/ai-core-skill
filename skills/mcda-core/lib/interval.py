@@ -8,6 +8,10 @@ from dataclasses import dataclass
 from typing import Union
 import numpy as np
 
+# 模块级常量
+EPSILON = 1e-9
+"""浮点数比较容差"""
+
 
 class IntervalError(Exception):
     """区间数错误
@@ -48,11 +52,15 @@ class Interval:
     upper: float
 
     def __post_init__(self):
-        """验证区间数"""
-        if self.lower > self.upper:
+        """验证区间数（使用浮点数容差）"""
+        # 使用容差避免浮点数精度问题
+        if self.lower > self.upper + EPSILON:
             raise IntervalError(
                 f"区间下界必须小于等于上界，当前: lower={self.lower}, upper={self.upper}"
             )
+        # 如果 lower 略大于 upper（在容差范围内），调整为相等
+        if self.lower > self.upper:
+            object.__setattr__(self, 'upper', self.lower)
 
     @property
     def midpoint(self) -> float:
@@ -193,17 +201,28 @@ class Interval:
     def __eq__(self, other: object) -> bool:
         """区间相等比较
 
-        基于中点比较。
+        基于区间端点比较。两个区间相等当且仅当
+        它们的下界和上界都相等。
 
         Args:
             other: 另一个区间
 
         Returns:
-            如果中点相等返回 True，否则返回 False
+            如果区间端点相等返回 True，否则返回 False
         """
         if not isinstance(other, Interval):
             return NotImplemented
-        return self.midpoint == other.midpoint
+        return self.lower == other.lower and self.upper == other.upper
+
+    def __hash__(self) -> int:
+        """哈希值计算
+
+        基于区间端点计算哈希值。
+
+        Returns:
+            哈希值
+        """
+        return hash((self.lower, self.upper))
 
     def __lt__(self, other: object) -> bool:
         """区间小于比较

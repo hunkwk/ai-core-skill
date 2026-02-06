@@ -8,6 +8,8 @@ VetoEvaluator: 一票否决评估器
 - 组合否决（composite）
 """
 
+from typing import Any
+
 from mcda_core.constraints.models import (
     VetoCondition,
     VetoConfig,
@@ -33,7 +35,7 @@ class VetoEvaluator:
         self,
         alternative_id: str,
         scores: dict[str, float],
-        criteria: list[any]  # list of Criterion
+        criteria: list[Any]  # list of Criterion
     ) -> VetoResult:
         """
         评估单个方案

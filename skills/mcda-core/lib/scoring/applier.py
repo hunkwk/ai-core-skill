@@ -5,12 +5,9 @@ MCDA Core 评分规则应用器
 """
 
 from typing import Dict, Any
-from pathlib import Path
-import sys
 
-# 添加父目录到路径以导入 models
-sys.path.insert(0, str(Path(__file__).parent.parent))
-import models
+# 使用相对导入替代 sys.path.insert
+from .. import models
 
 
 class ScoringApplier:

@@ -11,7 +11,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from .models import Criterion, DecisionProblem, DecisionResult, MCDAAlgorithm
+    from .models import Criterion, DecisionProblem, DecisionResult
+    from .algorithms.base import MCDAAlgorithm
 
 
 # ============================================================================

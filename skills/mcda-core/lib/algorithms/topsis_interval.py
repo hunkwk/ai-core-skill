@@ -95,12 +95,6 @@ class IntervalTOPSISAlgorithm(MCDAAlgorithm):
         n_alt = len(alternatives)
         n_crit = len(criteria)
 
-        if n_alt < 2:
-            raise ValueError("至少需要 2 个备选方案")
-
-        if n_crit < 1:
-            raise ValueError("至少需要 1 个准则")
-
         # 1. 提取权重
         weights = np.array([c.weight for c in criteria])
 

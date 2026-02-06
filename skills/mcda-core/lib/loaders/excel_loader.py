@@ -290,6 +290,14 @@ class ExcelLoader(ConfigLoader):
 
         score_str = str(score_value).strip()
 
+        # Excel 注入防护：检查危险字符
+        dangerous_chars = {'$', '=', '+', '-', '*', '/', '(', ')', '{', '}'}
+        if any(char in score_str for char in dangerous_chars):
+            raise ValueError(
+                f"得分值包含非法字符: '{score_str}'。"
+                f"为防止 Excel 注入攻击，不允许使用以下字符: {', '.join(sorted(dangerous_chars))}"
+            )
+
         # 尝试解析为区间数
         if ',' in score_str:
             parts = score_str.split(',')

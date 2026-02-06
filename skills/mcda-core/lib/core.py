@@ -6,7 +6,7 @@ MCDA Core - 核心编排器模块
 
 from pathlib import Path
 from datetime import datetime
-from typing import Any, Union
+from typing import Any
 
 from .models import (
     DecisionProblem,
@@ -107,7 +107,7 @@ class MCDAOrchestrator:
 
     def load_from_json(
         self,
-        file_path: Union[str, Path],
+        file_path: Path | str,
         auto_normalize_weights: bool = True
     ) -> DecisionProblem:
         """从 JSON 文件加载决策问题
@@ -151,7 +151,7 @@ class MCDAOrchestrator:
 
     def load_from_file(
         self,
-        file_path: Union[str, Path],
+        file_path: Path | str,
         auto_normalize_weights: bool = True
     ) -> DecisionProblem:
         """自动检测格式并加载配置文件
@@ -578,8 +578,6 @@ class MCDAOrchestrator:
                         criterion=crit_name
                     )
 
-                score = float(alt_scores[crit_name])
-
             # 转换评分
             scores[alt] = {crit: float(alt_scores[crit]) for crit in criterion_names}
 
@@ -873,10 +871,8 @@ class MCDAOrchestrator:
 
         # 将否决结果添加到决策结果中
         if veto_results is not None:
-            # DecisionResult 是 frozen dataclass，需要创建新实例
-            # 这里简化处理，直接在返回前设置属性
-            # 实际项目中可能需要修改 DecisionResult 模型
-            object.__setattr__(result, 'veto_results', veto_results)
+            # 直接设置属性（DecisionResult 不是 frozen dataclass）
+            result.veto_results = veto_results
 
         # 4. 生成和保存报告（可选）
         if output_path is not None:

@@ -8,6 +8,7 @@ from typing import Any, TYPE_CHECKING
 import math
 
 from .base import MCDAAlgorithm, register_algorithm
+from ..models import MAX_SCORE
 
 # 类型注解导入
 if TYPE_CHECKING:
@@ -111,7 +112,7 @@ class VIKORAlgorithm(MCDAAlgorithm):
 
             # 处理 lower_better（方向反转）
             if crit.direction == "lower_better":
-                values = [100.0 - v for v in values]
+                values = [MAX_SCORE - v for v in values]
 
             min_val = min(values)
             max_val = max(values)

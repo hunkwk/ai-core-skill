@@ -12,6 +12,7 @@ from typing import Literal, Any, TYPE_CHECKING
 # 类型注解导入
 if TYPE_CHECKING:
     from mcda_core.interval import Interval
+    from mcda_core.constraints.models import VetoConfig
 
 # =============================================================================
 # 模块常量
@@ -28,6 +29,12 @@ MIN_SCORE = 0.0
 
 MAX_SCORE = 100.0
 """最高评分"""
+
+MIN_NORMALIZED = 0.0
+"""最低标准化值"""
+
+MAX_NORMALIZED = 1.0
+"""最高标准化值"""
 
 MIN_WEIGHT = 0.0
 """最低权重"""
@@ -212,7 +219,7 @@ class Criterion:
     description: str = ""
     scoring_rule: ScoringRule | None = None
     column: str | None = None
-    veto: Any | None = None  # VetoConfig | None
+    veto: "VetoConfig | None" = None
 
     def __post_init__(self):
         """验证参数有效性"""
@@ -532,6 +539,7 @@ class DecisionResult:
     raw_scores: dict[str, float]
     metadata: ResultMetadata
     sensitivity: SensitivityResult | None = None
+    veto_results: dict[str, Any] | None = None  # 否决结果 {alternative: VetoResult}
 
     def __post_init__(self):
         """验证数据一致性"""
