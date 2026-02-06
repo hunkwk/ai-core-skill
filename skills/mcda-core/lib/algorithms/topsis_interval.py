@@ -11,6 +11,10 @@ import numpy as np
 
 from .base import MCDAAlgorithm, register_algorithm
 
+# 模块级常量
+NUMERICAL_EPSILON = 1e-10
+"""数值比较的最小值，用于避免除零"""
+
 # 类型注解导入
 if TYPE_CHECKING:
     from mcda_core.models import DecisionProblem, DecisionResult, Criterion
@@ -187,7 +191,7 @@ class IntervalTOPSISAlgorithm(MCDAAlgorithm):
 
             norm = math.sqrt(sum_squares)
 
-            if norm < 1e-10:
+            if norm < NUMERICAL_EPSILON:
                 norm = 1.0  # 避免除零
 
             # 标准化
@@ -356,7 +360,7 @@ class IntervalTOPSISAlgorithm(MCDAAlgorithm):
 
             # 避免除零
             total = d_plus + d_minus
-            if total < 1e-10:
+            if total < NUMERICAL_EPSILON:
                 closeness[alt] = 0.0
             else:
                 closeness[alt] = d_minus / total

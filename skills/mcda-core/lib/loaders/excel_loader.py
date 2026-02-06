@@ -91,45 +91,49 @@ class ExcelLoader(ConfigLoader):
                 f"仅支持 .xlsx 和 .xlsm 格式"
             )
 
-        # 加载工作簿
+        # 加载工作簿（使用上下文管理器确保资源释放）
         try:
-            wb = openpyxl.load_workbook(source_path, data_only=True)
+            from contextlib import closing
+
+            with closing(openpyxl.load_workbook(source_path, data_only=True)) as wb:
+                # 获取目标 Sheet
+                try:
+                    ws = wb[sheet] if isinstance(sheet, str) else wb.worksheets[sheet]
+                except (KeyError, IndexError) as e:
+                    available_sheets = [ws.title for ws in wb.worksheets]
+                    raise ValueError(
+                        f"Sheet '{sheet}' 不存在，"
+                        f"可用的 Sheet: {available_sheets}"
+                    ) from e
+
+                # 解析决策矩阵
+                self._parse_decision_matrix(ws)
+
+                # 尝试读取元信息 Sheet（可选）
+                self._parse_metadata_sheet(wb)
+
+                # 构建配置字典（在 with 块内）
+                config = {
+                    'alternatives': self.alternatives,
+                    'criteria': self.criteria,
+                    'matrix': self.matrix,
+                    'metadata': {
+                        'source': str(source_path),
+                        'sheet': ws.title if isinstance(sheet, str) else f"Sheet{sheet}",
+                    }
+                }
+
+                # wb 在此处自动关闭
+
+            # 返回配置
+            return config
+
         except Exception as e:
+            if isinstance(e, ValueError):
+                raise
             raise ValueError(
                 f"无法读取 Excel 文件: {source}"
             ) from e
-
-        # 获取目标 Sheet
-        try:
-            ws = wb[sheet] if isinstance(sheet, str) else wb.worksheets[sheet]
-        except (KeyError, IndexError) as e:
-            available_sheets = [ws.title for ws in wb.worksheets]
-            raise ValueError(
-                f"Sheet '{sheet}' 不存在，"
-                f"可用的 Sheet: {available_sheets}"
-            ) from e
-
-        # 解析决策矩阵
-        self._parse_decision_matrix(ws)
-
-        # 尝试读取元信息 Sheet（可选）
-        self._parse_metadata_sheet(wb)
-
-        # 构建配置字典
-        config = {
-            'alternatives': self.alternatives,
-            'criteria': self.criteria,
-            'matrix': self.matrix,
-            'metadata': {
-                'source': str(source_path),
-                'format': 'excel',
-                'sheet': ws.title,
-                **self.metadata,
-            }
-        }
-
-        wb.close()
-        return config
 
     def _parse_decision_matrix(self, worksheet) -> None:
         """

@@ -41,6 +41,7 @@ class ChartGenerator:
     def __init__(self):
         """初始化图表生成器"""
         self.figures = []
+        self._closed = False
 
     def plot_rankings(
         self,
@@ -609,6 +610,17 @@ class ChartGenerator:
     # 原有方法
     # ========================================================================
 
+    def close(self) -> None:
+        """显式关闭所有图表，释放资源
+
+        推荐使用此方法而不是依赖 __del__，因为资源释放更可靠。
+        """
+        if not self._closed:
+            for fig in self.figures:
+                plt.close(fig)
+            self.figures.clear()
+            self._closed = True
+
     def clear_figures(self) -> None:
         """清除所有缓存的图表"""
         for fig in self.figures:
@@ -616,11 +628,11 @@ class ChartGenerator:
         self.figures.clear()
 
     def __del__(self):
-        """析构函数，确保所有图表都被关闭
+        """析构函数，确保所有图表都被关闭（后备机制）
 
-        注意: Python 不保证 __del__ 的调用时机，建议使用上下文管理器模式。
+        注意: Python 不保证 __del__ 的调用时机，建议使用 close() 方法或上下文管理器。
         """
-        self.clear_figures()
+        self.close()
 
     def __enter__(self):
         """进入上下文管理器
@@ -641,5 +653,5 @@ class ChartGenerator:
         Returns:
             False (不抑制异常)
         """
-        self.clear_figures()
+        self.close()
         return False

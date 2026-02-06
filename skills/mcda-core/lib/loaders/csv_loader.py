@@ -184,12 +184,20 @@ class CSVLoader(ConfigLoader):
         score_str = score_str.strip()
 
         # CSV 注入防护：检查危险字符（排除负号，因为负数是合法的）
-        # 只检查以危险字符开头的情况（防止公式注入）
-        dangerous_start_chars = {'$', '=', '+', '*', '/', '(', ')', '{', '}'}
+        # 1. 检查危险起始字符（防止公式注入）
+        dangerous_start_chars = {'$', '=', '+', '*', '/', '(', ')', '{', '}', '@', '\t', '\n', '\r'}
         if score_str and score_str[0] in dangerous_start_chars:
             raise ValueError(
                 f"得分值可能包含公式注入: '{score_str}'。"
                 f"不允许以以下字符开头: {', '.join(sorted(dangerous_start_chars))}"
+            )
+
+        # 2. 检查函数调用模式（如 SUM(, AVERAGE( 等）
+        import re
+        if re.match(r'^[A-Za-z_][A-Za-z0-9_]*\(', score_str):
+            raise ValueError(
+                f"得分值可能包含公式注入: '{score_str}'。"
+                f"不允许使用函数调用格式"
             )
 
         # 尝试解析为区间数
