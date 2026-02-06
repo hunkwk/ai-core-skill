@@ -1,9 +1,11 @@
 # ADR-005: 引入配置加载器抽象层
 
-**Status**: Proposed
+**Status**: Accepted
 **Type**: Architectural
 **Date**: 2026-02-01
 **Project**: MCDA Core v0.3
+**Implementation**: ✅ Completed (v0.10)
+**Review Date**: 2026-02-06
 
 ---
 
@@ -249,4 +251,9 @@ def load(self, file_path):
 
 **Created**: 2026-02-01
 **Author**: hunkwk + AI Architect
-**Status**: ✅ Proposed, Pending Implementation
+**Status**: ✅ Accepted & Implemented (v0.10)
+**Implementation Notes**:
+- LoaderFactory 和 ConfigLoader 接口已完整实现
+- 支持 YAML 和 JSON 配置文件
+- 自动格式检测功能正常
+- 单元测试覆盖率 ≥ 90%

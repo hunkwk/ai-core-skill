@@ -37,6 +37,69 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ---
 
+## 🚀 Quick Start
+
+### Python 环境设置
+```bash
+# 创建虚拟环境（首次）
+python3.12 -m venv .venv_linux
+
+# 激活虚拟环境
+source .venv_linux/bin/activate
+
+# 安装 MCDA-Core 依赖（如有）
+pip install -r requirements.txt
+```
+
+### Node.js 脚本
+```bash
+# 安装依赖
+npm install
+
+# 验证技能包
+npm run validate
+
+# 格式化代码
+npm run format:write
+npm run format:check
+```
+
+### 运行测试
+```bash
+# MCDA-Core 测试
+pytest tests/mcda-core/
+
+# 带覆盖率
+pytest tests/mcda-core/ --cov=mcda_core --cov-report=term-missing
+```
+
+---
+
+## ⚠️ Common Gotchas
+
+### WSL2 路径映射
+- **Windows 路径**: `/mnt/d/...`
+- **WSL 路径**: `/home/wangke/...`
+- **问题**: 某些工具不支持跨文件系统操作
+- **建议**: 优先使用 WSL 原生路径
+
+### Git 配置文件
+- **问题**: `.claude/` 被 `.gitignore` 忽略
+- **解决**: 强制添加项目配置: `git add -f .claude/settings.local.json`
+
+### Python 路径
+- pytest.ini 已配置 `pythonpath = skills`
+- **Gotcha**: 运行单个文件时需手动设置:
+  ```bash
+  PYTHONPATH=skills pytest tests/mcda-core/unit/test_core/test_models.py
+  ```
+
+### MCP 服务器配置
+- **问题**: `.mcp.json` 配置可能不生效
+- **检查**: 确认 `enableAllProjectMcpServers: true` 或在 `enabledMcpjsonServers` 中列出
+
+---
+
 ## 📁 Project Root Directory Structure
 
 **根目录文件组织原则**: 保持简洁，只保留核心配置和文档
@@ -395,120 +458,39 @@ checkpoint-v{version}-phase{N}.md  # Phase checkpoint (OPTIONAL)
 - **Progress Tracking**: 所有关键里程碑的集中记录位置
 - **Knowledge Preservation**: 捕获决策、指标和经验教训
 - **Easy Review**: 单一 `checkpoint-complete.md` 查看整体进度
-- **Team Alignment**: 统一的项目进度和成就视图
 
-**Checkpoint Content Requirements**:
+**必需内容** (7个):
+1. 📊 Executive Summary - 项目总览和核心指标
+2. 🎯 Version Milestones - 所有版本完成情况
+3. 📈 Cumulative Achievements - 累计统计和功能清单
+4. 🏆 Quality Metrics - 代码质量和测试覆盖率
+5. 🎓 Lessons Learned - 成功经验和技术债务
+6. 🚀 Git Commit History - 关键提交记录
+7. 🎯 Future Planning - 下一版本规划
 
-#### 必需内容 (Required)
+**创建时机**:
+- ✅ 版本完成（v0.1, v0.2, ...）
+- ✅ 重大功能完成
+- ✅ 项目阶段性总结
+- ⏸️ 小 bug 修复（更新现有即可）
 
-1. **📊 Executive Summary**
-   - 项目总览（名称、状态、最新版本）
-   - 核心指标（测试数、覆盖率、代码行数）
-   - 当前状态概述
-
-2. **🎯 Version Milestones**
-   - 所有版本的完成情况（v0.1 → v0.N）
-   - 每个版本的功能清单
-   - 测试统计和质量指标
-   - Git 提交 hash
-
-3. **📈 Cumulative Achievements**
-   - 累计测试统计（所有版本汇总）
-   - 算法库/功能清单
-   - 代码量统计（实现、测试、文档）
-   - 质量指标趋势
-
-4. **🏆 Quality Metrics**
-   - 代码质量评分
-   - 测试覆盖率趋势
-   - 性能指标
-   - 开发效率
-
-5. **🎓 Lessons Learned**
-   - 成功经验（⭐⭐⭐⭐⭐ 评分）
-   - 改进建议
-   - 技术债务
-
-6. **🚀 Git Commit History**
-   - 关键提交记录
-   - 当前分支状态
-   - 总提交数
-
-7. **🎯 Future Planning**
-   - 下一版本规划
-   - 长期目标
-   - 技术路线图
-
-#### 可选内容 (Optional)
-
-8. **📂 Project Structure** - 项目结构图
-9. **🔧 Tech Stack** - 技术栈清单
-10. **📝 ADR References** - 架构决策链接
-11. **🎉 Achievements** - 成就解锁清单
-12. **📊 Project Health** - 项目健康度评分
-
-**Checkpoint Creation Workflow**:
-
-#### 标准流程 (MUST Follow)
-
+**创建流程**:
 ```bash
-# 1. 完成重要里程碑（版本/阶段完成）
-# 例如：v0.6 所有 phase 完成并测试通过
-
-# 2. 运行完整测试套件并记录指标
+# 1. 运行测试套件
 pytest tests/{feature}/ --cov=skills/{feature}/lib --cov-report=term-missing
 
-# 3. 收集版本信息
-git log --oneline -10                    # 最近提交
-git log --oneline --all | grep -i "v0.6" # 版本相关提交
-find tests/{feature}/ -name "test_*.py" | wc -l  # 测试数量
+# 2. 收集版本信息
+git log --oneline -10
+find tests/{feature}/ -name "test_*.py" | wc -l
 
-# 4. 更新 checkpoint-complete.md
-# 添加新版本的内容到对应章节
-# - 更新 "🎯 Version Milestones" 章节
-# - 更新 "📈 Cumulative Achievements" 统计
-# - 更新 "🚀 Git Commit History" 提交记录
-# - 在 "🎯 Future Planning" 添加下一步计划
-
-# 5. Git commit checkpoint
+# 3. 更新并提交 checkpoint
 git add docs/checkpoints/{feature}/checkpoint-complete.md
-git commit -m "docs({feature}): 更新 checkpoint-complete.md - v0.6 完成"
-
-# 6. 更新 memory knowledge graph（可选）
-# 使用 MCP memory 工具记录关键成就
+git commit -m "docs({feature}): 更新 checkpoint-complete.md - v0.X 完成"
 ```
 
-#### 创建时机 (WHEN to Create)
-
-✅ **必须创建 Checkpoint 的情况**:
-- 版本完成（v0.1, v0.2, ... v0.N）
-- 重大功能完成（如群决策功能）
-- 项目阶段性总结（Phase 1-N 完成）
-- 项目质量评估或报告
-
-⏸️ **可以延迟创建的情况**:
-- 小 bug 修复（不创建新 checkpoint，更新现有即可）
-- 文档更新（无需 checkpoint）
-- 代码重构（除非是重大重构）
-
-#### Checkpoint 质量标准
-
-**质量检查清单**:
-- ✅ 包含所有必需章节（7 个必需内容）
-- ✅ 版本信息完整（功能、测试、Git commit）
-- ✅ 累计统计准确（测试总数、代码行数）
-- ✅ Git 提交记录正确
-- ✅ 格式统一（使用章节标题和表格）
-- ✅ 中文叙述，技术术语保持英文
-- ✅ 无拼写错误和格式错误
-
 **IMPORTANT**:
-- `checkpoint-complete.md` 始终作为整个功能的**单一真相来源**
-- 各版本 checkpoint 是可选的详细记录，但推荐创建
-- 每次完成版本后**必须更新** `checkpoint-complete.md`
-- 所有 checkpoints 必须在 `docs/checkpoints/{feature}/` 中，绝不在 `docs/active/`
-- Checkpoint 文件使用 **Markdown 格式**，便于版本控制和审查
-- Checkpoint 是**项目文档**，不是进度文件（进度在 `docs/active/`）
+- `checkpoint-complete.md` 是单一真相来源，每次版本后必须更新
+- Checkpoints 在 `docs/checkpoints/{feature}/`，绝不在 `docs/active/`
 
 ### Archive Purpose
 

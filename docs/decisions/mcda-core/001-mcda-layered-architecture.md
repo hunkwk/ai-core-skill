@@ -1,10 +1,13 @@
 # ADR-001: MCDA Core 分层架构设计
 
 ## 状态
-**已接受 (Accepted)**
+**已废弃 (Deprecated)** - 请使用 [v2.0](./001-mcda-layered-architecture-v2.md)
 
 ## 日期
 2026-01-31
+**废弃日期**: 2026-02-06
+**替代版本**: ADR-001 v2.0
+**废弃理由**: v0.10-v0.13 架构演进超出原设计，需要新增"功能扩展层"
 
 ## 上下文 (Context)
 MCDA Core 需要支持多种决策分析算法（WSM、AHP、TOPSIS、ELECTRE），每种算法有：
@@ -380,5 +383,11 @@ class ValidationService:
 **决策者**: hunkwk + AI architect agent
 **批准日期**: 2026-01-31
 **最后更新**: 2026-01-31（同步 MVP 优先级调整）
-**状态**: 已接受，v0.2 MVP 实施中
+**状态**: ⚠️ **已废弃** (Deprecated) - 请使用 [ADR-001 v2.0](./001-mcda-layered-architecture-v2.md)
 **实施范围**: WSM + WPM + TOPSIS + VIKOR，MinMax + Vector 标准化，直接赋权
+
+**废弃说明**:
+- v1.0 定义了五层架构，为项目奠定了良好基础
+- v0.10-v0.13 期间，项目自然演进，新增 8 个功能模块
+- v2.0 升级为六层架构，新增"功能扩展层"
+- 建议使用 v2.0 作为当前架构参考

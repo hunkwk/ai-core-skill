@@ -8,15 +8,16 @@
 
 | 编号 | 标题 | 状态 | 日期 | 主题 |
 |------|------|------|------|------|
-| [ADR-001](./001-mcda-layered-architecture.md) | 分层架构设计 | ✅ 已接受 | 2026-01-31 | 架构 |
+| [ADR-001 v2.0](./001-mcda-layered-architecture-v2.md) | 分层架构设计（六层） | ✅ 已接受 | 2026-02-06 | 架构 |
+| [ADR-001 v1.0](./001-mcda-layered-architecture.md) | 分层架构设计（五层） | ⚠️ 已废弃 | 2026-01-31 | 架构 |
 | [ADR-002](./002-mcda-normalization-methods.md) | 标准化方法 | ✅ 已接受 | 2026-01-31 | 标准化 |
 | [ADR-003](./003-mcda-weighting-roadmap.md) | 赋权方法路线图 | ✅ 已接受 | 2026-01-31 | 赋权 |
 | [ADR-004](./004-mcda-aggregation-algorithms.md) | 汇总算法架构设计 | ✅ 已接受 | 2026-01-31 | 算法 |
-| [ADR-005](./005-loader-abstract-layer.md) | 加载器抽象层 | ✅ 已接受 | 2026-01-31 | 数据加载 |
-| [ADR-006](./006-sensitivity-service-refactoring.md) | 敏感性分析服务重构 | ✅ 已接受 | 2026-01-31 | 服务 |
+| [ADR-005](./005-loader-abstract-layer.md) | 加载器抽象层 | ✅ 已接受 | 2026-02-01 | 数据加载 |
+| [ADR-006](./006-sensitivity-service-refactoring.md) | 敏感性分析服务重构 | ❌ 已废弃 | 2026-01-31 | 服务 |
 | [ADR-007](./007-interval-fuzzy-mcda-architecture.md) | 区间数/模糊数 MCDA 架构设计 | 📋 提议 | 2026-02-03 | 不确定性 |
-| [ADR-008](./008-group-decision-aggregation-strategy.md) | 群决策聚合策略选择 | 📋 提议 | 2026-02-03 | 群决策 |
-| [ADR-014](./014-veto-mechanism.md) | 一票否决机制架构设计 | 📋 提议 | 2026-02-05 | 约束系统 |
+| [ADR-008](./008-group-decision-aggregation-strategy.md) | 群决策聚合策略选择 | ✅ 已接受 | 2026-02-03 | 群决策 |
+| [ADR-014](./014-veto-mechanism.md) | 一票否决机制架构设计 | ✅ 已接受 | 2026-02-05 | 约束系统 |
 
 ---
 
@@ -24,18 +25,21 @@
 
 ### 按状态分类
 
-**已接受 (Accepted)**: 6 个
-- ADR-001: 分层架构设计
+**已接受 (Accepted)**: 7 个
+- ADR-001 v2.0: 分层架构设计（六层，当前版本）
 - ADR-002: 标准化方法
 - ADR-003: 赋权方法路线图
 - ADR-004: 汇总算法架构设计
 - ADR-005: 加载器抽象层
-- ADR-006: 敏感性分析服务重构
-
-**提议 (Proposed)**: 3 个
-- ADR-007: 区间数/模糊数 MCDA 架构设计
 - ADR-008: 群决策聚合策略选择
 - ADR-014: 一票否决机制架构设计
+
+**已废弃 (Deprecated)**: 2 个
+- ADR-001 v1.0: 分层架构设计（五层，已被 v2.0 替代）
+- ADR-006: 敏感性分析服务重构（未实施）
+
+**提议 (Proposed)**: 1 个
+- ADR-007: 区间数/模糊数 MCDA 架构设计
 
 **已归档 (Archived)**: 5 个
 - ADR-009-013: 版本规划调整（已归档到 [version-planning-history.md](../../active/mcda-core/version-planning-history.md)）
@@ -71,7 +75,7 @@
 ### 核心架构
 
 **新手入门**:
-1. 📖 [ADR-001: 分层架构设计](./001-mcda-layered-architecture.md) - **必读**
+1. 📖 [ADR-001 v2.0: 分层架构设计](./001-mcda-layered-architecture-v2.md) - **必读**（六层架构）
 2. 📖 [ADR-004: 汇总算法架构设计](./004-mcda-aggregation-algorithms.md) - **必读**
 
 **数据流**:
@@ -88,10 +92,10 @@
 1. 📋 [ADR-007: 区间数/模糊数 MCDA](./007-interval-fuzzy-mcda-architecture.md) - v0.5-v0.7
 
 **群决策**:
-1. 📋 [ADR-008: 群决策聚合策略](./008-group-decision-aggregation-strategy.md) - v0.5-v0.6
+1. ✅ [ADR-008: 群决策聚合策略](./008-group-decision-aggregation-strategy.md) - v0.6 已完成
 
 **约束系统**:
-1. 📋 [ADR-014: 一票否决机制](./014-veto-mechanism.md) - v0.10
+1. ✅ [ADR-014: 一票否决机制](./014-veto-mechanism.md) - v0.10 已完成
 
 ### 版本规划
 
@@ -148,18 +152,19 @@ YYYY-MM-DD
 **总 ADR 数**: 14 个（9 个活跃 + 5 个归档）
 
 **活跃 ADR 按状态**:
-- ✅ 已接受: 6 个 (67%)
-- 📋 提议: 3 个 (33%)
+- ✅ 已接受: 7 个 (78%)
+- 📋 提议: 1 个 (11%)
+- ❌ 已废弃: 2 个 (11%)
 
 **归档 ADR**:
 - 版本规划调整: 5 个 (ADR-009 ~ 013)
 
 **按主题分类**:
-- 架构设计: 2 个
+- 架构设计: 2 个（v1.0 已废弃，v2.0 当前）
 - 算法: 1 个
 - 数据处理: 2 个
-- 服务: 1 个
-- 高级功能: 3 个（含一票否决）
+- 服务: 1 个（已废弃）
+- 高级功能: 4 个（群决策、否决机制、区间数/模糊数）
 
 ---
 
@@ -177,5 +182,5 @@ YYYY-MM-DD
 ---
 
 **维护者**: hunkwk + AI
-**最后更新**: 2026-02-05
-**下次审查**: v0.10 完成后
+**最后更新**: 2026-02-06（架构审查后更新）
+**下次审查**: v0.14 完成后
