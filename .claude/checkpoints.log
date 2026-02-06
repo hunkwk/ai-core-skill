@@ -1,0 +1,9 @@
+ checkpoints log created at 2026-02-03-07:10:32
+2026-02-03-07:12:52 | v0.5-planning-complete | 0b8ba67 | v0.5架构决策完成: ADR-007/008/009 + 路线图, 工期19人日, 评估75/100
+2026-02-03-10:01 | v0.5-complete | a32fcd3
+2026-02-04-19:17 | v0.7-completion | c081aef | MCDA Core v0.7 100% 完成 - VIKOR/TODIM 区间版本, 82个测试通过, 11人日按计划完成
+2026-02-05-19:46 | report-export-enhancement-complete | 1ad6fad
+2026-02-06-06:49:10 | v0.12.0-complete | f614b95f3d1abf4ff4ae3df79db1c03b33e3f8a9 | v0.12.0 性能测试框架完成 - 18个测试100%通过, 性能优异
+2026-02-06-06:59:39 | v0.12.1-phase2-2-3-complete | 5c77322aa30dc467ffe2d426a38299912bccb9f5 | v0.12.1优化: NumPy矩阵运算+LRU缓存, 16个测试100%通过
+2026-02-06-07:03:31 | v0.12.1-complete | 3d386b8857c508f5f2fafa042a20f76ffd62957b | v0.12.1完成: NumPy优化+缓存, 性能提升70%, 21个测试100%通过
+2026-02-06-12:16 | code-review-5-rounds-complete | 206cc9e
