@@ -4,7 +4,6 @@ ConstraintService: 一票否决约束服务
 提供决策问题的约束过滤和惩罚应用功能
 """
 
-from copy import deepcopy
 from typing import Any
 
 from mcda_core.constraints.evaluator import VetoEvaluator
@@ -86,9 +85,6 @@ class ConstraintService:
         Returns:
             DecisionProblem: 应用惩罚后的问题
         """
-        # 深拷贝问题，避免修改原问题
-        adjusted_problem = deepcopy(problem)
-
         # 创建新的评分矩阵
         new_scores = {}
         for alt_id in problem.alternatives:

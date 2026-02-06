@@ -273,3 +273,11 @@ class ValidationService:
                     "min_count": min_count,
                 },
             )
+
+
+# 模块公开接口
+__all__ = [
+    "ValidationResult",
+    "ValidationService",
+    "WEIGHT_TOLERANCE",
+]

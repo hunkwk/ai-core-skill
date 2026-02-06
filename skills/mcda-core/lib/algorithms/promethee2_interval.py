@@ -101,7 +101,7 @@ class PROMETHEE2IntervalAlgorithm(MCDAAlgorithm):
 
         Args:
             problem: 决策问题（评分可以是区间数）
-            preference_function: 偏差函数类型（可选，覆盖构造函数的值）
+            preference_function: 偏好函数类型（可选，覆盖构造函数的值）
             threshold: 阈值参数（可选，覆盖构造函数的值）
             **kwargs: 未使用的其他参数
 
