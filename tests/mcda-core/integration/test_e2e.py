@@ -22,7 +22,7 @@ from mcda_core.exceptions import MCDAError
 @pytest.fixture
 def fixtures_dir():
     """获取 fixtures 目录路径"""
-    return Path(__file__).parent / "fixtures"
+    return Path(__file__).parent.parent / "fixtures"
 
 
 @pytest.fixture

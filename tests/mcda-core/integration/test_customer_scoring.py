@@ -22,8 +22,8 @@ from pathlib import Path
 skill_path = Path(__file__).parent.parent.parent / "skills" / "mcda-core"
 sys.path.insert(0, str(skill_path))
 
-from lib.core import MCDAOrchestrator
-from lib.models import DecisionProblem
+from mcda_core.core import MCDAOrchestrator
+from mcda_core.models import DecisionProblem
 
 
 def load_raw_data(json_path: Path) -> dict:
