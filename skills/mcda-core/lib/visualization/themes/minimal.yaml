@@ -1,0 +1,88 @@
+# MCDA Core 极简主题配置
+# 风格: 黑白灰，简洁清晰
+
+name: "极简主题"
+description: "黑白灰，简洁清晰"
+version: "1.0.0"
+
+colors:
+  primary: "#333333"       # 深灰
+  secondary: "#666666"     # 中灰
+  accent: "#999999"        # 浅灰
+
+  background: "#FFFFFF"
+  figure_bg: "#FFFFFF"
+
+  text: "#000000"          # 纯黑
+  title: "#000000"
+  label: "#333333"
+
+  grid: "#E0E0E0"          # 极浅灰
+  axis: "#333333"
+
+  palette:
+    - "#333333"            # 深灰
+    - "#666666"            # 中灰
+    - "#999999"            # 浅灰
+    - "#CCCCCC"            # 极浅灰
+    - "#1a1a1a"            # 近黑
+    - "#4d4d4d"            # 深中灰
+    - "#808080"            # 中浅灰
+    - "#B3B3B3"            # 浅灰
+
+fonts:
+  family: "Helvetica, Arial, sans-serif"
+  title_size: 14
+  label_size: 11
+  tick_size: 10
+  legend_size: 10
+
+  title_weight: "bold"
+  label_weight: "normal"
+
+lines:
+  linewidth: 1.5
+  linestyle: "-"
+  marker: "o"
+  markersize: 5
+  alpha: 0.9
+
+charts:
+  bar:
+    edgecolor: "#333333"
+    alpha: 0.8
+
+  line:
+    marker: "o"
+    linestyle: "-"
+    linewidth: 1.5
+
+  pie:
+    startangle: 90
+    shadow: false
+    text_color: "black"
+
+  radar:
+    fill_alpha: 0.1
+    line_width: 1.5
+    marker: "o"
+
+  heatmap:
+    cmap: "Greys"
+    show_values: false
+
+  scatter:
+    alpha: 0.7
+    size: 80
+
+layout:
+  figsize: [10, 6]
+  dpi: 100
+  tight_layout: true
+  title_pad: 15
+
+save:
+  dpi: 300
+  format: "png"
+  bbox_inches: "tight"
+  facecolor: "white"

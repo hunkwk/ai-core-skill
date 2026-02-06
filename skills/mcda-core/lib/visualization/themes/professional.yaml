@@ -1,0 +1,88 @@
+# MCDA Core 专业主题配置
+# 风格: 深蓝色调，适合商务场景
+
+name: "专业主题"
+description: "深蓝色调，适合商务场景"
+version: "1.0.0"
+
+colors:
+  primary: "#1F4788"       # 深蓝
+  secondary: "#3B6BA5"     # 中蓝
+  accent: "#D4A017"        # 金色
+
+  background: "#FFFFFF"
+  figure_bg: "#F0F4F8"     # 极浅蓝
+
+  text: "#2C3E50"          # 深蓝灰
+  title: "#1A252F"         # 深黑蓝
+  label: "#34495E"         # 中蓝灰
+
+  grid: "#BDC3C7"          # 浅灰蓝
+  axis: "#7F8C8D"          # 灰蓝
+
+  palette:
+    - "#1F4788"            # 深蓝
+    - "#3B6BA5"            # 中蓝
+    - "#5DADE2"            # 浅蓝
+    - "#2874A6"            # 蓝绿
+    - "#1B4F72"            # 深蓝绿
+    - "#D4A017"            # 金色
+    - "#9A7B4F"            # 棕金
+    - "#6C5A3E"            # 深棕
+
+fonts:
+  family: "Segoe UI, Tahoma, Geneva, Verdana, sans-serif"
+  title_size: 16
+  label_size: 12
+  tick_size: 10
+  legend_size: 11
+
+  title_weight: "bold"
+  label_weight: "normal"
+
+lines:
+  linewidth: 2.5
+  linestyle: "-"
+  marker: "o"
+  markersize: 6
+  alpha: 0.8
+
+charts:
+  bar:
+    edgecolor: "#1F4788"
+    alpha: 0.8
+
+  line:
+    marker: "o"
+    linestyle: "-"
+    linewidth: 2.5
+
+  pie:
+    startangle: 90
+    shadow: true
+    text_color: "white"
+
+  radar:
+    fill_alpha: 0.2
+    line_width: 2.5
+    marker: "o"
+
+  heatmap:
+    cmap: "Blues"
+    show_values: false
+
+  scatter:
+    alpha: 0.7
+    size: 120
+
+layout:
+  figsize: [10, 6]
+  dpi: 100
+  tight_layout: true
+  title_pad: 20
+
+save:
+  dpi: 300
+  format: "png"
+  bbox_inches: "tight"
+  facecolor: "white"

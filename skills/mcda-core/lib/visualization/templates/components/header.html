@@ -1,0 +1,6 @@
+{% block header %}
+<h1>{{ title|default('MCDA 决策报告', true) }}</h1>
+{% if subtitle %}
+<p class="subtitle">{{ subtitle }}</p>
+{% endif %}
+{% endblock %}

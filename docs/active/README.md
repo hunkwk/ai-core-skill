@@ -1,66 +1,32 @@
-# Active Tasks Directory
+# Active 工作目录
 
-This directory tracks execution progress for ongoing development tasks.
+**用途**: 记录当前正在进行的版本开发进度
 
-## Purpose
-
-Real-time progress tracking for:
-- TDD development cycles
-- Bug fixing workflows
-- Refactoring tasks
-- Performance optimization
-
-## File Naming
+## 📋 目录结构
 
 ```
-{type}-{slug}.md
-
-Types:
-  tdd-      : TDD development (RED → GREEN → REFACTOR)
-  fix-      : Bug fix (REPRODUCING → DIAGNOSING → FIXING → VERIFYING)
-  refactor- : Code refactoring (ANALYSIS → REFACTORING → TESTING)
-  perf-     : Performance optimization
-  exp-      : Experimental tasks
-
-Examples:
-  tdd-user-auth.md
-  fix-login-crash.md
-  refactor-payment-service.md
+active/
+└── {feature}/              # 功能模块
+    └── v{version}/         # 版本号
+        ├── tdd-{name}.md   # TDD 开发进度
+        ├── fix-{bug}.md    # Bug 修复进度
+        └── refactor-{target}.md  # 重构进度
 ```
 
-## Workflow
+## 🔄 文档生命周期
 
-```bash
-# Start new task
-git feature user-auth
-# Creates: docs/active/tdd-user-auth.md
+1. **创建**: 版本开始时创建空目录 `active/{feature}/v{version}/`
+2. **更新**: AI 在开发过程中创建进度文件
+3. **完成**: 版本完成后移动到 `archive/{feature}/v{version}/active/`
 
-# Update progress
-# AI updates status in progress file
+## 📌 注意事项
 
-# Complete task
-git finish
-# Archives: docs/active/archive/2025-01/tdd-user-auth.completed.md
-```
+- ⚠️ 此目录**只包含当前进行中**的版本
+- ✅ 完成的版本**必须归档**到 `archive/`
+- 📝 进度文件命名遵循: `tdd-{name}.md`, `fix-{bug}.md`, `refactor-{target}.md`
 
-## Integration with Git Flow
+## 🔗 相关文档
 
-| Branch | Progress File |
-|--------|--------------|
-| `feature/user-auth` | `active/tdd-user-auth.md` |
-| `fix/login-crash` | `active/fix-login-crash.md` |
-| `refactor/payment` | `active/refactor-payment.md` |
-
-## Archive Structure
-
-Completed tasks are archived monthly:
-```
-archive/
-└── 2025-01/
-    ├── tdd-user-auth.completed.md
-    └── fix-login-crash.completed.md
-```
-
----
-
-**Auto-maintained by**: AI (via `/tdd`, `/code-review`, `/checkpoint`)
+- [文档架构原则](../documentation-architecture-v2.md)
+- [归档目录](../archive/)
+- [计划目录](../plans/)

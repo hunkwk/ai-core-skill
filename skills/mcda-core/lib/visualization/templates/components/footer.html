@@ -1,0 +1,9 @@
+{% block footer %}
+<div class="footer-content">
+    <p>生成时间: {{ generation_time|default('N/A', true) }}</p>
+    {% if algorithm %}
+    <p>算法: {{ algorithm }}</p>
+    {% endif %}
+    <p>MCDA Core v1.0.0 - 多准则决策分析系统</p>
+</div>
+{% endblock %}

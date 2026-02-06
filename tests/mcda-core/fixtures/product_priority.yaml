@@ -1,0 +1,65 @@
+# 产品优先级决策问题
+# 用于确定产品开发优先级的多准则决策分析
+
+name: 产品优先级排序
+
+# 备选方案（待开发的产品功能）
+alternatives:
+  - AI推荐功能
+  - 移动端适配
+  - 数据分析面板
+  - 用户权限系统
+
+# 评估准则
+criteria:
+  - name: 市场需求
+    weight: 0.35
+    direction: higher_better
+    description: 市场对功能的需求程度
+
+  - name: 技术难度
+    weight: 0.20
+    direction: lower_better
+    description: 开发技术难度（越低越好）
+
+  - name: 商业价值
+    weight: 0.30
+    direction: higher_better
+    description: 预期商业收益
+
+  - name: 紧迫性
+    weight: 0.15
+    direction: higher_better
+    description: 竞争紧迫性
+
+# 评分矩阵（0-100 分）
+scores:
+  AI推荐功能:
+    市场需求: 90
+    技术难度: 75
+    商业价值: 85
+    紧迫性: 70
+
+  移动端适配:
+    市场需求: 85
+    技术难度: 60
+    商业价值: 70
+    紧迫性: 80
+
+  数据分析面板:
+    市场需求: 70
+    技术难度: 45
+    商业价值: 75
+    紧迫性: 60
+
+  用户权限系统:
+    市场需求: 65
+    技术难度: 50
+    商业价值: 60
+    紧迫性: 90
+
+# 算法配置
+algorithm:
+  name: vikor
+  parameters:
+    v: 0.5
