@@ -5,7 +5,6 @@
 """
 
 from dataclasses import dataclass
-from typing import Union
 import numpy as np
 
 # 模块级常量
@@ -124,7 +123,7 @@ class Interval:
             self.upper - other.lower
         )
 
-    def __mul__(self, other: Union["Interval", float]) -> "Interval":
+    def __mul__(self, other: "Interval | float") -> "Interval":
         """区间乘法
 
         Args:
@@ -158,7 +157,7 @@ class Interval:
         else:
             raise TypeError(f"只能与区间或标量相乘，当前类型: {type(other)}")
 
-    def __truediv__(self, other: Union["Interval", float]) -> "Interval":
+    def __truediv__(self, other: "Interval | float") -> "Interval":
         """区间除法
 
         Args:

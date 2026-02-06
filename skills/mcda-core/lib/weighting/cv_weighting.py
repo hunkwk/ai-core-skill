@@ -4,7 +4,6 @@
 基于数据离散程度的客观权重计算。
 """
 
-from typing import Union
 import numpy as np
 from numpy.typing import NDArray
 
@@ -14,7 +13,7 @@ class CVWeightingError(Exception):
     pass
 
 
-def cv_weighting(matrix: Union[NDArray, list]) -> NDArray:
+def cv_weighting(matrix: NDArray | list) -> NDArray:
     """
     变异系数法赋权
 
@@ -71,7 +70,7 @@ def cv_weighting(matrix: Union[NDArray, list]) -> NDArray:
     return weights
 
 
-def _validate_input(matrix: Union[NDArray, list]) -> NDArray:
+def _validate_input(matrix: NDArray | list) -> NDArray:
     """验证并转换输入"""
     if matrix is None:
         raise CVWeightingError("决策矩阵不能为 None")

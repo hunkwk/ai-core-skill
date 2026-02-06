@@ -4,7 +4,6 @@ TODIM 算法实现
 基于前景理论的多准则决策排序算法。
 """
 
-from typing import Union
 import numpy as np
 from numpy.typing import NDArray
 from ..models import DecisionProblem, Criterion, RankingItem, DecisionResult, ResultMetadata

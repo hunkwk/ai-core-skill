@@ -4,7 +4,6 @@ Logarithmic 标准化方法
 实现对数标准化，适用于比率型数据。
 """
 
-from typing import Union
 import numpy as np
 from numpy.typing import NDArray
 
@@ -28,7 +27,7 @@ class LogarithmicNormalizer:
 
     def normalize(
         self,
-        data: Union[NDArray, list],
+        data: NDArray | list,
         maximize: bool = True
     ) -> NDArray:
         """
@@ -63,7 +62,7 @@ class LogarithmicNormalizer:
             # 成本型: log(max) / log(x)
             return np.log(max_val) / np.log(data_offset)
 
-    def _validate_and_convert_input(self, data: Union[NDArray, list]) -> NDArray:
+    def _validate_and_convert_input(self, data: NDArray | list) -> NDArray:
         """
         验证并转换输入数据
 
@@ -113,7 +112,7 @@ _default_normalizer = LogarithmicNormalizer()
 
 
 def logarithmic_normalize(
-    data: Union[NDArray, list],
+    data: NDArray | list,
     maximize: bool = True,
     offset: float = 1.0
 ) -> NDArray:

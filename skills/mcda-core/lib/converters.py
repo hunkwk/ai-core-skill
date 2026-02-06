@@ -5,7 +5,7 @@ MCDA Core - 配置格式转换工具
 """
 
 from pathlib import Path
-from typing import Union, Literal
+from typing import Literal
 import json
 
 from .loaders import JSONLoader, YAMLLoader, LoaderFactory
@@ -29,8 +29,8 @@ class ConfigConverter:
 
     def convert(
         self,
-        input_file: Union[str, Path],
-        output_file: Union[str, Path],
+        input_file: str | Path,
+        output_file: str | Path,
         output_format: FormatType | None = None,
         indent: int = 2,
         ensure_ascii: bool = False
@@ -69,8 +69,8 @@ class ConfigConverter:
 
     def convert_to_json(
         self,
-        input_file: Union[str, Path],
-        output_file: Union[str, Path] | None = None,
+        input_file: str | Path,
+        output_file: str | Path | None = None,
         indent: int = 2,
         ensure_ascii: bool = False
     ) -> str:
@@ -109,8 +109,8 @@ class ConfigConverter:
 
     def convert_to_yaml(
         self,
-        input_file: Union[str, Path],
-        output_file: Union[str, Path] | None = None,
+        input_file: str | Path,
+        output_file: str | Path | None = None,
         default_flow_style: bool = False
     ) -> str:
         """转换为 YAML 格式

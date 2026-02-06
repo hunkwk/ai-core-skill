@@ -4,7 +4,6 @@ CRITIC 赋权方法
 基于对比强度和冲突性的权重计算。
 """
 
-from typing import Union
 import numpy as np
 from numpy.typing import NDArray
 
@@ -14,7 +13,7 @@ class CRITICWeightingError(Exception):
     pass
 
 
-def critic_weighting(matrix: Union[NDArray, list]) -> NDArray:
+def critic_weighting(matrix: NDArray | list) -> NDArray:
     """
     CRITIC 赋权方法
 
@@ -118,7 +117,7 @@ def _zscore(a: NDArray, axis: int = 0, ddof: int = 0) -> NDArray:
         return (a - mean[:, np.newaxis]) / std[:, np.newaxis]
 
 
-def _validate_input(matrix: Union[NDArray, list]) -> NDArray:
+def _validate_input(matrix: NDArray | list) -> NDArray:
     """验证并转换输入"""
     if matrix is None:
         raise CRITICWeightingError("决策矩阵不能为 None")

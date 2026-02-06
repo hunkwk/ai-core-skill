@@ -4,7 +4,6 @@ Sigmoid 标准化方法
 实现 Sigmoid 标准化，适用于需要平滑转换的场景。
 """
 
-from typing import Union
 import numpy as np
 from numpy.typing import NDArray
 
@@ -23,7 +22,7 @@ class SigmoidNormalizer:
 
     def normalize(
         self,
-        data: Union[NDArray, list],
+        data: NDArray | list,
         k: float = 2.0,
         mu: float = None,
         sigma: float = None,
@@ -66,7 +65,7 @@ class SigmoidNormalizer:
 
         return result
 
-    def _validate_and_convert_input(self, data: Union[NDArray, list]) -> NDArray:
+    def _validate_and_convert_input(self, data: NDArray | list) -> NDArray:
         """验证并转换输入"""
         if data is None:
             raise SigmoidNormalizerError("数据不能为 None")
@@ -90,7 +89,7 @@ class SigmoidNormalizer:
 
 
 def sigmoid_normalize(
-    data: Union[NDArray, list],
+    data: NDArray | list,
     k: float = 2.0,
     auto_stats: bool = True
 ) -> NDArray:

@@ -17,7 +17,6 @@ References:
     - Jolliffe, I.T. (2002). Principal Component Analysis
 """
 
-from typing import Union
 import numpy as np
 from numpy.typing import NDArray
 
@@ -34,7 +33,7 @@ class PCAWeightingError(Exception):
 MAX_CRITERIA = 50
 
 
-def pca_weighting(matrix: Union[NDArray, list]) -> NDArray:
+def pca_weighting(matrix: NDArray | list) -> NDArray:
     """
     主成分分析赋权
 
@@ -98,7 +97,7 @@ def pca_weighting(matrix: Union[NDArray, list]) -> NDArray:
     return weights
 
 
-def _validate_input(matrix: Union[NDArray, list]) -> NDArray:
+def _validate_input(matrix: NDArray | list) -> NDArray:
     """验证并转换输入
 
     Args:
