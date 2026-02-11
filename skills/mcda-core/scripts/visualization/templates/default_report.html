@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - MCDA 决策报告{% endblock %}
+
+{% block content %}
+<h2>决策摘要</h2>
+{% if summary %}
+<p>{{ summary }}</p>
+{% endif %}
+
+{% if algorithm %}
+<h3>算法信息</h3>
+<p><strong>算法:</strong> {{ algorithm }}</p>
+{% endif %}
+
+{% if alternatives %}
+<h3>备选方案</h3>
+<ul>
+    {% for alt in alternatives %}
+    <li>{{ alt }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if rankings %}
+<h3>决策结果</h3>
+<table>
+    <thead>
+        <tr>
+            <th>排名</th>
+            <th>方案</th>
+            <th>得分</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in rankings %}
+        <tr>
+            <td>{{ item.rank }}</td>
+            <td>{{ item.alternative }}</td>
+            <td>{{ item.score|format_score }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if charts %}
+<h3>图表分析</h3>
+{% for chart in charts %}
+<div class="chart">
+    <h4>{{ chart.title }}</h4>
+    {% if chart.image %}
+    <img src="{{ chart.image }}" alt="{{ chart.title }}">
+    {% endif %}
+    {% if chart.description %}
+    <p>{{ chart.description }}</p>
+    {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
+{% if metadata %}
+<h3>元数据</h3>
+<ul>
+    {% if metadata.problem_size %}
+    <li>问题规模: {{ metadata.problem_size[0] }} 个方案 × {{ metadata.problem_size[1] }} 个准则</li>
+    {% endif %}
+    {% if metadata.algorithm_name %}
+    <li>算法: {{ metadata.algorithm_name }}</li>
+    {% endif %}
+</ul>
+{% endif %}
+{% endblock %}
