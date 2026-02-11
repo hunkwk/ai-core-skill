@@ -15,7 +15,7 @@ import numpy as np
 
 # 添加路径
 project_root = Path(__file__).parent.parent.parent.parent.parent
-mcda_core_path = project_root / "skills" / "mcda-core" / "lib"
+mcda_core_path = project_root / "skills" / "mcda-core" / "scripts"
 if str(mcda_core_path) not in sys.path:
     sys.path.insert(0, str(mcda_core_path))
 

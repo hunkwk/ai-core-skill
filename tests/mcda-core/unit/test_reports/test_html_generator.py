@@ -17,7 +17,7 @@ import pytest
 from bs4 import BeautifulSoup
 
 # 添加 mcda_core 模块路径
-mcda_core_path = Path(__file__).parent.parent.parent / "skills" / "mcda-core" / "lib"
+mcda_core_path = Path(__file__).parent.parent.parent / "skills" / "mcda-core" / "scripts"
 if str(mcda_core_path) not in sys.path:
     sys.path.insert(0, str(mcda_core_path))
 

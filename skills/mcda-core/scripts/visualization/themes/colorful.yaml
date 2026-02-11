@@ -1,0 +1,88 @@
+# MCDA Core 彩色主题配置
+# 风格: 鲜艳色彩，适合演示
+
+name: "彩色主题"
+description: "鲜艳色彩，适合演示"
+version: "1.0.0"
+
+colors:
+  primary: "#E74C3C"       # 红色
+  secondary: "#3498DB"     # 蓝色
+  accent: "#2ECC71"        # 绿色
+
+  background: "#FFFFFF"
+  figure_bg: "#FAFAFA"
+
+  text: "#2C3E50"
+  title: "#1A252F"
+  label: "#34495E"
+
+  grid: "#DDDDDD"
+  axis: "#7F8C8D"
+
+  palette:
+    - "#E74C3C"            # 红色
+    - "#3498DB"            # 蓝色
+    - "#2ECC71"            # 绿色
+    - "#F39C12"            # 橙色
+    - "#9B59B6"            # 紫色
+    - "#1ABC9C"            # 青色
+    - "#E67E22"            # 深橙
+    - "#34495E"            # 深蓝灰
+
+fonts:
+  family: "Verdana, Geneva, sans-serif"
+  title_size: 15
+  label_size: 12
+  tick_size: 11
+  legend_size: 11
+
+  title_weight: "bold"
+  label_weight: "normal"
+
+lines:
+  linewidth: 2
+  linestyle: "-"
+  marker: "o"
+  markersize: 7
+  alpha: 0.8
+
+charts:
+  bar:
+    edgecolor: "white"
+    alpha: 0.85
+
+  line:
+    marker: "o"
+    linestyle: "-"
+    linewidth: 2.5
+
+  pie:
+    startangle: 90
+    shadow: true
+    text_color: "white"
+
+  radar:
+    fill_alpha: 0.25
+    line_width: 2
+    marker: "o"
+
+  heatmap:
+    cmap: "RdYlBu_r"
+    show_values: false
+
+  scatter:
+    alpha: 0.7
+    size: 110
+
+layout:
+  figsize: [11, 7]
+  dpi: 100
+  tight_layout: true
+  title_pad: 20
+
+save:
+  dpi: 300
+  format: "png"
+  bbox_inches: "tight"
+  facecolor: "white"

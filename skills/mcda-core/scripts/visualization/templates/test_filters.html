@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>过滤器测试</title>
+</head>
+<body>
+    <h1>自定义过滤器测试</h1>
+
+    <h2>百分比过滤器</h2>
+    <p>值: {{ value }}</p>
+    <p>百分比: {{ value|percentage }}</p>
+
+    <h2>舍入过滤器</h2>
+    <p>原始值: {{ score }}</p>
+    <p>舍入后: {{ score|round }}</p>
+    <p>舍入到3位: {{ score|round(3) }}</p>
+
+    <h2>格式化分数</h2>
+    <p>原始值: {{ score }}</p>
+    <p>格式化后: {{ score|format_score }}</p>
+</body>
+</html>
