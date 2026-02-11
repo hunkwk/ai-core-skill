@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 # 添加 mcda_core 模块路径
-mcda_core_path = Path(__file__).parent.parent.parent / "skills" / "mcda-core" / "lib"
+mcda_core_path = Path(__file__).parent.parent.parent / "skills" / "mcda-core" / "scripts"
 sys.path.insert(0, str(mcda_core_path.resolve()))
 
 import pytest

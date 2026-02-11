@@ -1,0 +1,100 @@
+# MCDA Core 默认主题配置
+# 风格: 蓝灰色调，平衡专业和美观
+
+name: "默认主题"
+description: "蓝灰色调，平衡专业和美观"
+version: "1.0.0"
+
+# 颜色配置
+colors:
+  # 主色调
+  primary: "#4682B4"       # SteelBlue
+  secondary: "#708090"     # SlateGray
+  accent: "#FF6347"        # Tomato
+
+  # 背景色
+  background: "#FFFFFF"    # 白色
+  figure_bg: "#F8F8F8"     # 浅灰
+
+  # 文字颜色
+  text: "#333333"          # 深灰
+  title: "#1a1a1a"         # 黑色
+  label: "#555555"         # 中灰
+
+  # 网格和轴
+  grid: "#CCCCCC"          # 浅灰
+  axis: "#666666"          # 中灰
+
+  # 图表颜色（调色板）
+  palette:
+    - "#4682B4"            # SteelBlue
+    - "#708090"            # SlateGray
+    - "#2E8B57"            # SeaGreen
+    - "#CD5C5C"            # IndianRed
+    - "#DAA520"            # GoldenRod
+    - "#9370DB"            # MediumPurple
+    - "#20B2AA"            # LightSeaGreen
+    - "#F4A460"            # SandyBrown
+
+# 字体配置
+fonts:
+  family: "DejaVu Sans, Arial, sans-serif"
+  title_size: 14
+  label_size: 12
+  tick_size: 10
+  legend_size: 11
+
+  # 字重
+  title_weight: "bold"
+  label_weight: "normal"
+
+# 线条样式
+lines:
+  linewidth: 2
+  linestyle: "-"
+  marker: "o"
+  markersize: 6
+  alpha: 0.7
+
+# 图表特定配置
+charts:
+  bar:
+    edgecolor: "black"
+    alpha: 0.7
+
+  line:
+    marker: "o"
+    linestyle: "-"
+    linewidth: 2
+
+  pie:
+    startangle: 90
+    shadow: true
+    text_color: "white"
+
+  radar:
+    fill_alpha: 0.15
+    line_width: 2
+    marker: "o"
+
+  heatmap:
+    cmap: "YlOrRd"
+    show_values: false
+
+  scatter:
+    alpha: 0.6
+    size: 100
+
+# 布局配置
+layout:
+  figsize: [10, 6]
+  dpi: 100
+  tight_layout: true
+  title_pad: 20
+
+# 保存配置
+save:
+  dpi: 300
+  format: "png"
+  bbox_inches: "tight"
+  facecolor: "white"

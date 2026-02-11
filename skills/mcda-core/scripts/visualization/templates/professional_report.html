@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - 专业报告{% endblock %}
+
+{% block content %}
+<div style="background: #1F4788; color: white; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+    <h2 style="margin-top: 0;">{{ title }}</h2>
+    {% if subtitle %}
+    <p>{{ subtitle }}</p>
+    {% endif %}
+</div>
+
+{% if summary %}
+<div style="background: #f0f4f8; padding: 15px; border-left: 4px solid #1F4788; margin-bottom: 20px;">
+    <h3>执行摘要</h3>
+    <p>{{ summary }}</p>
+</div>
+{% endif %}
+
+{% if algorithm %}
+<h3>分析方法</h3>
+<p><strong>算法:</strong> <span style="color: #1F4788;">{{ algorithm }}</span></p>
+{% endif %}
+
+{% if alternatives %}
+<h3>备选方案</h3>
+<table style="border: 2px solid #1F4788;">
+    <thead>
+        <tr style="background: #1F4788;">
+            <th>序号</th>
+            <th>方案名称</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for alt in alternatives %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ alt }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if rankings %}
+<h3>决策结果</h3>
+<table style="border: 2px solid #1F4788;">
+    <thead>
+        <tr style="background: #1F4788;">
+            <th>排名</th>
+            <th>方案</th>
+            <th>得分</th>
+            <th>评级</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in rankings %}
+        <tr>
+            <td><strong>{{ item.rank }}</strong></td>
+            <td>{{ item.alternative }}</td>
+            <td style="font-family: monospace;">{{ item.score|format_score }}</td>
+            <td>
+                {% if item.score >= 0.8 %}
+                <span style="color: green;">★ 优秀</span>
+                {% elif item.score >= 0.6 %}
+                <span style="color: orange;">★ 良好</span>
+                {% else %}
+                <span style="color: red;">★ 一般</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if charts %}
+<h3>图表分析</h3>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+    {% for chart in charts %}
+    <div class="chart" style="background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h4 style="color: #1F4788;">{{ chart.title }}</h4>
+        {% if chart.image %}
+        <img src="{{ chart.image }}" alt="{{ chart.title }}" style="border: 1px solid #ddd;">
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if metadata %}
+<h3>分析元数据</h3>
+<table style="border: 1px solid #ddd;">
+    <tbody>
+        {% if metadata.problem_size %}
+        <tr>
+            <td><strong>问题规模</strong></td>
+            <td>{{ metadata.problem_size[0] }} 个方案 × {{ metadata.problem_size[1] }} 个准则</td>
+        </tr>
+        {% endif %}
+        {% if metadata.algorithm_name %}
+        <tr>
+            <td><strong>算法</strong></td>
+            <td>{{ metadata.algorithm_name }}</td>
+        </tr>
+        {% endif %}
+        {% if metadata.generation_time %}
+        <tr>
+            <td><strong>生成时间</strong></td>
+            <td>{{ metadata.generation_time }}</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if recommendations %}
+<h3>决策建议</h3>
+<div style="background: #e8f4f8; padding: 15px; border-left: 4px solid #3B6BA5; margin-top: 20px;">
+    <ul>
+        {% for rec in recommendations %}
+        <li>{{ rec }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endblock %}
