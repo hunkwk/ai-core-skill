@@ -7,3 +7,4 @@
 2026-02-06-06:59:39 | v0.12.1-phase2-2-3-complete | 5c77322aa30dc467ffe2d426a38299912bccb9f5 | v0.12.1优化: NumPy矩阵运算+LRU缓存, 16个测试100%通过
 2026-02-06-07:03:31 | v0.12.1-complete | 3d386b8857c508f5f2fafa042a20f76ffd62957b | v0.12.1完成: NumPy优化+缓存, 性能提升70%, 21个测试100%通过
 2026-02-06-12:16 | code-review-5-rounds-complete | 206cc9e
+2026-02-11-10:45 | v1.0.1-refactor-complete | ad3be31 | MCDA-Core v1.0.1 重构完成: lib→scripts, 相对导入, 98.9%测试通过, Git Flow完整流程
