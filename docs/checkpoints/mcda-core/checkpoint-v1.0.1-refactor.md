@@ -108,17 +108,17 @@ from ..interval import Interval
 ```
 1. feature/mcda-core 分支
    ├─ 提交: c4a9a9c (v1.0.1 重构)
-   └─ 推送: origin/feature/mcda-core
+   └─ 推送: github/feature/mcda-core
 
 2. develop 分支
    ├─ 合并: feature/mcda-core
    ├─ 提交: 48bf287
-   └─ 推送: origin/develop
+   └─ 推送: github/develop
 
 3. main 分支
    ├─ 合并: develop
    ├─ 提交: ad3be31
-   └─ 推送: origin/main
+   └─ 推送: github/main
 
 4. 标签
    └─ v1.0.1 (已推送)
@@ -132,7 +132,7 @@ from ..interval import Interval
 
 **清理内容**:
 - ✅ 删除分支: `feature/report-builder`
-- ✅ 删除远程分支: `origin/feature/report-builder`
+- ✅ 删除远程分支: `github/feature/report-builder`
 - ✅ 保留文档: 5 个目录，12 个文件（336K）
 
 **保留文档**:
